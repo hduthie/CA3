@@ -3,6 +3,10 @@ package socialmedia;
 import java.io.IOException;
 import java.io.Serializable;
 
+
+
+
+
 public class SocialMedia extends Serializable{
 
     int createAccount(String handle) throws IllegalHandleException, InvalidHandleException;
@@ -20,4 +24,6 @@ public class SocialMedia extends Serializable{
 	 *                                         account in the system.
 	 */
 
+
+	 
 }
