@@ -1,8 +1,12 @@
+package socialmedia;
+
+import java.util.ArrayList;
+
 public class Endorsement extends Post {
 
     // inherits message from post class
 
-    Post refersTo = new Post();
+    Post refersTo;
 
     public Post getRefersTo() {
         return refersTo;
@@ -12,7 +16,7 @@ public class Endorsement extends Post {
         this.refersTo = refersTo;
     }
 
-    public Endorsement(int postID, String author, ArrayList<postRecord> records, Post refersTo) {
+    public Endorsement(int postID, String author, ArrayList<Post> records, Post refersTo) {
         super(postID, author, records);
         this.refersTo = refersTo;
     }

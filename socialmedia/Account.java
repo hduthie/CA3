@@ -1,13 +1,16 @@
+package socialmedia;
+
 import java.util.ArrayList;
 
 public class Account {
     private int id; // numerical identifier
     private String handle; // unique
     private String description; // can be empty
+    private ArrayList<Post> posts = new ArrayList<Post>();
     private static ArrayList<String> handles = new ArrayList<String>();
     private static int idCount = 10000000;
 
-    public Account(String handle) {
+    public Account(String handle) throws IllegalHandleException, InvalidHandleException {
         if (isHandleValid(handle)) {
             if (isHandleUnique(handle)) {
                 this.handle = handle;
@@ -26,10 +29,6 @@ public class Account {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getHandle() {
         return handle;
     }
@@ -46,11 +45,11 @@ public class Account {
         this.description = description;
     }
 
-    public Boolean isHandleUnique(String handle) {
+    public static Boolean isHandleUnique(String handle) {
         return handles.contains(handle);
     }
 
-    public Boolean isHandleValid(String handle) {
+    public static Boolean isHandleValid(String handle) {
         if (handle.equals("")) {
             return false;
         }
@@ -62,6 +61,14 @@ public class Account {
         }
 
         return true;
+    }
+
+    public ArrayList<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(ArrayList<Post> posts) {
+        this.posts = posts;
     }
 
 }
