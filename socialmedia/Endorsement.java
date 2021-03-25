@@ -16,8 +16,8 @@ public class Endorsement extends Post {
         this.refersTo = refersTo;
     }
 
-    public Endorsement(int postID, String author, ArrayList<Post> records, Post refersTo) {
-        super(postID, author, records);
+    public Endorsement( Account author, Post refersTo) {
+        super(author, "EP@" + author.getHandle() + ": " + refersTo.getMessage());
         this.refersTo = refersTo;
     }
 }

@@ -100,17 +100,12 @@ public class SocialMedia implements Serializable {
 	 * @throws HandleNotRecognisedException if the handle does not match to any
 	 *                                      account in the system.
 	 */
-	String showAccount(String handle) throws HandleNotRecognisedException{
+	String showAccount(String handle) throws HandleNotRecognisedException {
 		Account a = findAccountFromHandle(handle);
-		int numberOfPosts = 0;
-		
-		for(Post p: posts){
-			if(p.getAuthor() == a){
-				numberOfPosts += 1;
-			}
-		} 
-		return "ID: " + a.getId() + "\nHandle: " + a.getHandle() + "\nDescription: " + a.getDescription() 
-		+ "\nPost count: "+ numberOfPosts + "\nEndorse count: " +  countEndorsements(a);
+		int numberOfPosts = a.getPosts().size();
+
+		return "ID: " + a.getId() + "\nHandle: " + a.getHandle() + "\nDescription: " + a.getDescription()
+				+ "\nPost count: " + numberOfPosts + "\nEndorse count: " + countEndorsements(a);
 	}
 
 	/**
@@ -139,6 +134,67 @@ public class SocialMedia implements Serializable {
 		}
 	}
 
+	/**
+	 * The method creates a post for the account identified by the given handle with
+	 * the following message.
+	 * <p>
+	 * The state of this SocialMediaPlatform must be be unchanged if any exceptions
+	 * are thrown.
+	 * 
+	 * @param handle  handle to identify the account.
+	 * @param message post message.
+	 * @throws HandleNotRecognisedException if the handle does not match to any
+	 *                                      account in the system.
+	 * @throws InvalidPostException         if the message is empty or has more than
+	 *                                      100 characters.
+	 * @return the sequential ID of the created post.
+	 */
+	int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
+		Account a = findAccountFromHandle(handle);
+		if (message.equals("") || message.length() > 100) {
+			throw new InvalidPostException("The post : " + message + " is invalid");
+		} else {
+			Post post = new Post(a, message);
+			return post.getPostID();
+		}
+
+	}
+
+	/**
+	 * The method creates an endorsement post of an existing post, similar to a
+	 * retweet on Twitter. An endorsement post is a special post. It contains a
+	 * reference to the endorsed post and its message is formatted as:
+	 * <p>
+	 * <code>"EP@" + [endorsed account handle] + ": " + [endorsed message]</code>
+	 * <p>
+	 * The state of this SocialMediaPlatform must be be unchanged if any exceptions
+	 * are thrown.
+	 * 
+	 * @param handle of the account endorsing a post.
+	 * @param id     of the post being endorsed.
+	 * @return the sequential ID of the created post.
+	 * @throws HandleNotRecognisedException if the handle does not match to any
+	 *                                      account in the system.
+	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
+	 *                                      the system.
+	 * @throws NotActionablePostException   if the ID refers to a endorsement post.
+	 *                                      Endorsement posts are not endorsable.
+	 *                                      Endorsements are not transitive. For
+	 *                                      instance, if post A is endorsed by post
+	 *                                      B, and an account wants to endorse B, in
+	 *                                      fact, the endorsement must refers to A.
+	 */
+	int endorsePost(String handle, int id)
+			throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
+
+		Account a = findAccountFromHandle(handle);
+
+		Endorsement endorsement = new Endorsement(a, getPostFromId(id));
+		// what if endorsemtn isnt created this will throw an error v
+		return endorsement.getPostID();
+
+	}
+
 	private Account findAccountFromHandle(String handle) throws HandleNotRecognisedException {
 
 		for (Account a : accounts) {
@@ -147,6 +203,16 @@ public class SocialMedia implements Serializable {
 			}
 		}
 		throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.");
+
+	}
+
+	private Post getPostFromId(int id) throws PostIDNotRecognisedException {
+		for (Post p : posts) {
+			if (p.getPostID() == id) {
+				return p;
+			}
+		}
+		throw new PostIDNotRecognisedException("The post ID " + id + " is not recognised.");
 
 	}
 
@@ -165,7 +231,7 @@ public class SocialMedia implements Serializable {
 
 	private int countEndorsements(Account a) {
 		int totalEndorsements = 0;
-
+		// counts endorsements on original posts and comments
 		// TEST THIS METHOD
 		for (Post p : a.getPosts()) {
 			for (Post q : p.getReplies()) {
