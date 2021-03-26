@@ -71,4 +71,15 @@ public class Account {
         this.posts = posts;
     }
 
+    public void addPostToAccount(Post p) {
+        posts.add(p);
+    }
+
+    public void removePostFromAccount(Post p) {
+        if (posts.contains(p)) {
+            posts.remove(p);
+        }
+
+    }
+
 }

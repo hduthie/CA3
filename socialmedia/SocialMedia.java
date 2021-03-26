@@ -155,6 +155,7 @@ public class SocialMedia implements Serializable {
 			throw new InvalidPostException("The post : " + message + " is invalid");
 		} else {
 			Post post = new Post(a, message);
+			a.addPostToAccount(post);
 			return post.getPostID();
 		}
 
@@ -188,12 +189,329 @@ public class SocialMedia implements Serializable {
 			throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
 
 		Account a = findAccountFromHandle(handle);
-
-		Endorsement endorsement = new Endorsement(a, getPostFromId(id));
-		// what if endorsemtn isnt created this will throw an error v
+		Post postEndorsed = getPostFromId(id);
+		if (postEndorsed instanceof Endorsement) {
+			throw new NotActionablePostException("Endorsement posts are not endorsable.");
+		}
+		Endorsement endorsement = new Endorsement(a, postEndorsed);
+		postEndorsed.addReply(endorsement);
+		postEndorsed.incrementEndorsements();
+		a.addPostToAccount(endorsement);
 		return endorsement.getPostID();
 
 	}
+
+	/**
+	 * The method creates a comment post referring to an existing post, similarly to
+	 * a reply on Twitter. A comment post is a special post. It contains a reference
+	 * to the post being commented upon.
+	 * <p>
+	 * The state of this SocialMediaPlatform must be be unchanged if any exceptions
+	 * are thrown.
+	 * 
+	 * @param handle  of the account commenting a post.
+	 * @param id      of the post being commented.
+	 * @param message the comment post message.
+	 * @return the sequential ID of the created post.
+	 * @throws HandleNotRecognisedException if the handle does not match to any
+	 *                                      account in the system.
+	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
+	 *                                      the system.
+	 * @throws NotActionablePostException   if the ID refers to a endorsement post.
+	 *                                      Endorsement posts are not endorsable.
+	 *                                      Endorsements cannot be commented. For
+	 *                                      instance, if post A is endorsed by post
+	 *                                      B, and an account wants to comment B, in
+	 *                                      fact, the comment must refers to A.
+	 * @throws InvalidPostException         if the comment message is empty or has
+	 *                                      more than 100 characters.
+	 */
+	int commentPost(String handle, int id, String message) throws HandleNotRecognisedException,
+			PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
+		Post postCommentedOn = getPostFromId(id);
+		Account commenter = findAccountFromHandle(handle);
+		if (postCommentedOn instanceof Endorsement) {
+			throw new NotActionablePostException("You cannot comment on an Endorsement.");
+		}
+		Comment comment = new Comment(commenter, message, postCommentedOn);
+		postCommentedOn.addReply((Post) comment);
+		postCommentedOn.incrementComments();
+		commenter.addPostToAccount(comment);
+		return comment.getPostID();
+	}
+
+	/**
+	 * The method removes the post from the platform. When a post is removed, all
+	 * its endorsements should be removed as well. All replies to this post should
+	 * be updated by replacing the reference to this post by a generic empty post.
+	 * <p>
+	 * The generic empty post message should be "The original content was removed
+	 * from the system and is no longer available.". This empty post is just a
+	 * replacement placeholder for the post which a reply refers to. Empty posts
+	 * should not be linked to any account and cannot be acted upon, i.e., it cannot
+	 * be available for endorsements or replies.
+	 * <p>
+	 * The state of this SocialMediaPlatform must be be unchanged if any exceptions
+	 * are thrown.
+	 * 
+	 * @param id ID of post to be removed.
+	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
+	 *                                      the system.
+	 */
+	void deletePost(int id) throws PostIDNotRecognisedException {
+		GenericEmptyPost genericEmptyPost = new GenericEmptyPost();
+		Post deletedPost = getPostFromId(id);
+		Account deletedPostAccount = deletedPost.getAuthor();
+		for (Post p : deletedPost.getReplies()) {
+			if ((p instanceof Endorsement) && (posts.contains(p))) {
+				posts.remove(p);
+				deletedPost.getReplies().remove(p);
+			} else if (p instanceof Comment) {
+				((Comment) p).setReplyingTo(genericEmptyPost);
+			}
+		}
+		posts.remove(deletedPost);
+		deletedPostAccount.removePostFromAccount(deletedPost);
+	}
+
+	/**
+	 * The method generates a formated string containing the details of a single
+	 * post. The format is as follows:
+	 * 
+	 * <pre>
+	 * ID: [post ID]
+	 * Account: [account handle]
+	 * No. endorsements: [number of endorsements received by the post] | No. comments: [number of comments received by the post]
+	 * [post message]
+	 * </pre>
+	 * 
+	 * @param id of the post to be shown.
+	 * @return a formatted string containing post's details.
+	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
+	 *                                      the system.
+	 */
+	String showIndividualPost(int id) throws PostIDNotRecognisedException {
+		Post post = getPostFromId(id);
+
+		return "ID: " + post.getPostID() + "\nAccount: " + post.getAuthor().getHandle() + "\nNo. endorsements: "
+				+ post.getNumberOfEndorsements() + " | No. comments: " + post.getNumberOfComments() + "\n" + post.getMessage();
+
+	}
+
+	/**
+	 * The method builds a StringBuilder showing the details of the current post and
+	 * all its children posts. The format is as follows:
+	 * 
+	 * <pre>
+	 * {@link #showIndividualPost(int) showIndividualPost(id)}
+	 * |
+	 * [for reply: replies to the post sorted by ID]
+	 * |  > {@link #showIndividualPost(int) showIndividualPost(reply)}
+	 * </pre>
+	 * 
+	 * See an example:
+	 * 
+	 * <pre>
+	 * ID: 1
+	 * Account: user1
+	 * No. endorsements: 2 | No. comments: 3
+	 * I like examples.
+	 * |
+	 * | > ID: 3
+	 *     Account: user2
+	 *     No. endorsements: 0 | No. comments: 1
+	 *     No more than me...
+	 *     |
+	 *     | > ID: 5
+	 *         Account: user1
+	 *         No. endorsements: 0 | No. comments: 1
+	 *         I can prove!
+	 *         |                                         
+	 *         | > ID: 6                                 
+	 *             Account: user2                        
+	 *             No. endorsements: 0 | No. comments: 0 
+	 *             prove it                    
+	 * | > ID: 4
+	 *     Account: user3
+	 *     No. endorsements: 4 | No. comments: 0
+	 *     Can't you do better than this?
+	 * 
+	 * | > ID: 7
+	 *     Account: user5
+	 *     No. endorsements: 0 | No. comments: 1
+	 *     where is the example?
+	 *     |
+	 *     | > ID: 10
+	 *         Account: user1
+	 *         No. endorsements: 0 | No. comments: 0
+	 *         This is the example!
+	 * </pre>
+	 * 
+	 * Continuing with the example, if the method is called for post ID=5
+	 * ({@code showIndividualPost(5)}), the return would be:
+	 * 
+	 * <pre>
+	 * ID: 5
+	 * Account: user1
+	 * No. endorsements: 0 | No. comments: 1
+	 * I can prove!
+	 * |                                         
+	 * | > ID: 6                                 
+	 *     Account: user2                        
+	 *     No. endorsements: 0 | No. comments: 0 
+	 *     prove it
+	 * </pre>
+	 * 
+	 * @param id of the post to be shown.
+	 * @return a formatted StringBuilder containing the details of the post and its
+	 *         children.
+	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
+	 *                                      the system.
+	 * @throws NotActionablePostException   if the ID refers to an endorsement post.
+	 *                                      Endorsement posts do not have children
+	 *                                      since they are not endorsable nor
+	 *                                      commented.
+	 */
+	StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
+		StringBuilder postChildrenDetails = new StringBuilder();
+		Post originalPost = getPostFromId(id);
+		if (originalPost instanceof Endorsement) {
+			throw new NotActionablePostException("Endorsement posts do not have children.");
+		}
+		showIndividualPost(id);
+		Boolean noMoreChildren = false;
+
+		while (!noMoreChildren) {
+			for (Post p : originalPost.getReplies()) {
+				showIndividualPost(p.getPostID());
+
+			}
+		}
+
+		for (Post p : originalPost.getReplies()) {
+			showIndividualPost(p.getPostID());
+			if (hasChildren(p)) {
+				// recursively check the children
+			}
+
+		}
+
+		return postChildrenDetails;
+	}
+
+	// End Post-related methods ****************************************
+
+	// Analytics-related methods ****************************************
+
+	/**
+	 * This method returns the current total number of accounts present in the
+	 * platform. Note, this is NOT the total number of accounts ever created since
+	 * the current total should discount deletions.
+	 * 
+	 * @return the total number of accounts in the platform.
+	 */
+	int getNumberOfAccounts() {
+		return accounts.size();
+	}
+
+	/**
+	 * This method returns the current total number of original posts (i.e.,
+	 * disregarding endorsements and comments) present in the platform. Note, this
+	 * is NOT the total number of posts ever created since the current total should
+	 * discount deletions.
+	 * 
+	 * @return the total number of original posts in the platform.
+	 */
+	int getTotalOriginalPosts() {
+		int totalOriginalPosts = 0;
+		for (Post p : posts) {
+			if (!(p instanceof Endorsement) && !(p instanceof Comment)) {
+				totalOriginalPosts += 1;
+			}
+		}
+		return totalOriginalPosts;
+	}
+
+	/**
+	 * This method returns the current total number of endorsement posts present in
+	 * the platform. Note, this is NOT the total number of endorsements ever created
+	 * since the current total should discount deletions.
+	 * 
+	 * @return the total number of endorsement posts in the platform.
+	 */
+	int getTotalEndorsmentPosts() {
+		int totalEndorsementPosts = 0;
+		for (Post p : posts) {
+			if (p instanceof Endorsement) {
+				totalEndorsementPosts += 1;
+			}
+		}
+		return totalEndorsementPosts;
+
+	}
+
+	/**
+	 * This method returns the current total number of comments posts present in the
+	 * platform. Note, this is NOT the total number of comments ever created since
+	 * the current total should discount deletions.
+	 * 
+	 * @return the total number of comments posts in the platform.
+	 */
+	int getTotalCommentPosts() {
+		int totalCommentedPosts = 0;
+		for (Post p : posts) {
+			if (p instanceof Comment) {
+				totalCommentedPosts += 1;
+			}
+		}
+		return totalCommentedPosts;
+	}
+
+	/**
+	 * This method identifies and returns the post with the most number of
+	 * endorsements, a.k.a. the most popular post.
+	 * 
+	 * @return the ID of the most popular post.
+	 */
+	int getMostEndorsedPost() {
+		Post mostEndorsedPost = null;
+		int mostEndorsements = 0;
+		for(Post p : posts){
+			if (p.getNumberOfEndorsements() > mostEndorsements){
+				mostEndorsedPost = p;
+				mostEndorsements = p.getNumberOfEndorsements();
+			}
+		}
+		return mostEndorsedPost.getPostID();
+	}
+
+	/**
+	 * This method identifies and returns the account with the most number of
+	 * endorsements, a.k.a. the most popular account.
+	 * 
+	 * @return the ID of the most popular account.
+	 */
+	int getMostEndorsedAccount() {
+
+		Post mostEndorsedPost = null;
+		int mostEndorsements = 0;
+		Account mostEndorsedAccount = null;
+
+
+
+		
+		for(Post p : posts){
+			if (p.getNumberOfEndorsements() > mostEndorsements){
+				mostEndorsedPost = p;
+				mostEndorsements = p.getNumberOfEndorsements();
+			}
+		}
+		return mostEndorsedPost.getPostID();
+		
+	}
+	// End Management-related methods ****************************************
+
+	// Internal methods ****************************************
 
 	private Account findAccountFromHandle(String handle) throws HandleNotRecognisedException {
 
@@ -242,6 +560,15 @@ public class SocialMedia implements Serializable {
 
 		}
 		return totalEndorsements;
+	}
+
+	private Boolean hasChildren(Post post) {
+		if (post.getReplies().size() == 0) {
+			return false;
+		} else {
+			return true;
+		}
+
 	}
 
 }

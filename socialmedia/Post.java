@@ -4,16 +4,21 @@ import java.util.ArrayList;
 
 public class Post {
 
-    private int postID; 
-    private Account author;
-    private String message;
+    protected int postID; 
+    protected Account author;
+    protected String message;
+    protected int numberOfEndorsements = 0;
+    protected int numberOfComments = 0;
     private ArrayList<Post> replies = new ArrayList<Post>();
+    private static int chronologicalId = 0;
 
 
     public Post(Account author, String message) {
-        //assign a unique chronological ID usin a static attribute
+        // Are we checking for errors - need to do 
         this.author = author;
         this.message = message;
+        postID = chronologicalId;
+        incrementId();
     }
 
     public int getPostID() {
@@ -44,7 +49,30 @@ public class Post {
         this.replies = replies;
     }
 
+    private static void incrementId(){
+        chronologicalId += 1;
+    }
 
+    public void addReply(Post post) {
+        replies.add(post);
+    }
+
+    public void incrementEndorsements(){
+        numberOfEndorsements +=1;
+    }
+
+    public void incrementComments(){
+        numberOfComments +=1;
+    }
+
+    public int getNumberOfEndorsements() {
+        return numberOfEndorsements;
+    }
+
+
+    public int getNumberOfComments() {
+        return numberOfComments;
+    }
 
   
 

@@ -3,10 +3,14 @@ package socialmedia;
 import java.util.ArrayList;
 
 public class Endorsement extends Post {
-
-    // inherits message from post class
-
     Post refersTo;
+
+    public Endorsement(Account author, Post refersTo) {
+
+        // add this endorsement to the repleis of the OG post 
+        super(author, "EP@" + author.getHandle() + ": " + refersTo.getMessage());
+        this.refersTo = refersTo;
+    }
 
     public Post getRefersTo() {
         return refersTo;
@@ -16,8 +20,4 @@ public class Endorsement extends Post {
         this.refersTo = refersTo;
     }
 
-    public Endorsement( Account author, Post refersTo) {
-        super(author, "EP@" + author.getHandle() + ": " + refersTo.getMessage());
-        this.refersTo = refersTo;
-    }
 }
