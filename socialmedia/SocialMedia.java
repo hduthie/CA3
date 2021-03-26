@@ -259,15 +259,23 @@ public class SocialMedia implements Serializable {
 	 *                                      the system.
 	 */
 	void deletePost(int id) throws PostIDNotRecognisedException {
-		GenericEmptyPost genericEmptyPost = new GenericEmptyPost();
 		Post deletedPost = getPostFromId(id);
+		GenericEmptyPost genericEmptyPost = new GenericEmptyPost(deletedPost);
 		Account deletedPostAccount = deletedPost.getAuthor();
+
+
+		// if the post youre deleting is a comment, it must be removed from posts(platform), from the account that coomented it, and from the post its replyting ot
+		// what should happen to child comments? generic empty post? 
 		for (Post p : deletedPost.getReplies()) {
 			if ((p instanceof Endorsement) && (posts.contains(p))) {
 				posts.remove(p);
 				deletedPost.getReplies().remove(p);
+				deletedPost.decrementEndorsements();
+				
 			} else if (p instanceof Comment) {
 				((Comment) p).setReplyingTo(genericEmptyPost);
+				posts.remove(p);
+				deletedPost.decrementEndorsements();
 			}
 		}
 		posts.remove(deletedPost);
@@ -492,23 +500,20 @@ public class SocialMedia implements Serializable {
 	 * @return the ID of the most popular account.
 	 */
 	int getMostEndorsedAccount() {
-
-		Post mostEndorsedPost = null;
 		int mostEndorsements = 0;
 		Account mostEndorsedAccount = null;
 
-
-
-		
-		for(Post p : posts){
-			if (p.getNumberOfEndorsements() > mostEndorsements){
-				mostEndorsedPost = p;
-				mostEndorsements = p.getNumberOfEndorsements();
+		for(Account account: accounts){
+			if (account.getNumberOfEndorsements() > mostEndorsements){
+				mostEndorsedAccount = account;
+				mostEndorsements = account.getNumberOfEndorsements();
 			}
 		}
-		return mostEndorsedPost.getPostID();
+		return mostEndorsedAccount.getId();
 		
 	}
+
+
 	// End Management-related methods ****************************************
 
 	// Internal methods ****************************************

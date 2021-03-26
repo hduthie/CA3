@@ -6,6 +6,8 @@ public class Account {
     private int id; // numerical identifier
     private String handle; // unique
     private String description; // can be empty
+    private int numberOfEndorsements = 0;
+    private int numberOfComments = 0;
     private ArrayList<Post> posts = new ArrayList<Post>();
     private static ArrayList<String> handles = new ArrayList<String>();
     private static int idCount = 10000000;
@@ -80,6 +82,32 @@ public class Account {
             posts.remove(p);
         }
 
+    }
+
+    public void incrementEndorsements(){
+        numberOfEndorsements +=1;
+    }
+    public void decrementEndorsements(){
+        numberOfEndorsements -=1;
+    }
+
+
+    public void incrementComments(){
+        numberOfComments +=1;
+    }
+
+    public void decrementComments(){
+        numberOfComments -=1;
+    }
+
+
+    public int getNumberOfEndorsements() {
+        return numberOfEndorsements;
+    }
+
+
+    public int getNumberOfComments() {
+        return numberOfComments;
     }
 
 }

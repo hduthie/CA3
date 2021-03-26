@@ -9,7 +9,7 @@ public class Post {
     protected String message;
     protected int numberOfEndorsements = 0;
     protected int numberOfComments = 0;
-    private ArrayList<Post> replies = new ArrayList<Post>();
+    protected ArrayList<Post> replies = new ArrayList<Post>();
     private static int chronologicalId = 0;
 
 
@@ -60,10 +60,19 @@ public class Post {
     public void incrementEndorsements(){
         numberOfEndorsements +=1;
     }
+    public void decrementEndorsements(){
+        numberOfEndorsements -=1;
+    }
+
 
     public void incrementComments(){
         numberOfComments +=1;
     }
+
+    public void decrementComments(){
+        numberOfComments -=1;
+    }
+
 
     public int getNumberOfEndorsements() {
         return numberOfEndorsements;

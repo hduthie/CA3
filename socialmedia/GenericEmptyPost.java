@@ -1,11 +1,15 @@
 package socialmedia;
 
 public class GenericEmptyPost extends Post{
-    private static int postID = 0;
-    private static String message = "The original content was removed from the system and is no longer available.";
+    private Post replyingTo = null;
 
-    public GenericEmptyPost() {
-        super(null, null);
+
+    public GenericEmptyPost(Post originalPost) {
+        super(null, "The original content was removed from the system and is no longer available.");
+        if(originalPost instanceof Comment){
+            replyingTo = ((Comment) originalPost).getReplyingTo();
+        }
+        this.replies = originalPost.getReplies();
     }
 
     public int getPostID() {
@@ -15,7 +19,8 @@ public class GenericEmptyPost extends Post{
     public String getMessage() {
         return message;
     }
-
-    
+    public Post getReplyingTo() {
+        return replyingTo;
+    }
     
 }

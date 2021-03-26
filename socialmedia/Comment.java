@@ -1,6 +1,6 @@
 package socialmedia;
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 
 // comment extends Post
 public class Comment extends Post {
