@@ -48,7 +48,7 @@ public class Account {
     }
 
     public static Boolean isHandleUnique(String handle) {
-        return handles.contains(handle);
+        return !(handles.contains(handle));
     }
 
     public static Boolean isHandleValid(String handle) {
