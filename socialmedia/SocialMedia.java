@@ -24,6 +24,7 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * 
 	 */
 	public int createAccount(String handle) throws IllegalHandleException, InvalidHandleException {
+		checkAccountHandle(handle);
 		Account account = new Account(handle);
 		accounts.add(account);
 		return account.getId();
@@ -44,10 +45,13 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * @return the ID of the created account.
 	 */
 	public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
+
+		checkAccountHandle(handle);
 		Account account = new Account(handle);
 		account.setDescription(description);
 		accounts.add(account);
 		return account.getId();
+
 		// DO WE NEED A TRY-CATCH??? what do we need to catch
 		// Add account to the platform
 
@@ -71,12 +75,12 @@ public class SocialMedia implements SocialMediaPlatform {
 
 		for (Account account : accounts) {
 			if (account.getId() == id) {
-				accounts.remove(account);
 				removeAccount = account;
 				accountIdRecognised = true;
+				break;
 			}
 		}
-
+		accounts.remove(removeAccount);
 		if (!accountIdRecognised) {
 			throw new AccountIDNotRecognisedException("The account ID has not been recognised.");
 		}
@@ -119,7 +123,6 @@ public class SocialMedia implements SocialMediaPlatform {
 			}
 		}
 	}
-	
 
 	/**
 	 * The method replaces the oldHandle of an account by the newHandle.
@@ -454,7 +457,8 @@ public class SocialMedia implements SocialMediaPlatform {
 	 *                                      since they are not endorsable nor
 	 *                                      commented.
 	 */
-	public StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
+	public StringBuilder showPostChildrenDetails(int id)
+			throws PostIDNotRecognisedException, NotActionablePostException {
 		StringBuilder postChildrenDetails = new StringBuilder();
 		Post originalPost = getPostFromId(id);
 		if (originalPost instanceof Endorsement) {
@@ -623,15 +627,13 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	}
 
-
-
-		// Management-related methods ****************************************
+	// Management-related methods ****************************************
 
 	/**
 	 * Method empties this SocialMediaPlatform of its contents and resets all
 	 * internal counters.
 	 */
-	public void erasePlatform(){
+	public void erasePlatform() {
 
 	}
 
@@ -643,7 +645,7 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * @throws IOException if there is a problem experienced when trying to save the
 	 *                     store contents to the file
 	 */
-	public void savePlatform(String filename) throws IOException{
+	public void savePlatform(String filename) throws IOException {
 
 	}
 
@@ -660,11 +662,10 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * @throws ClassNotFoundException if required class files cannot be found when
 	 *                                loading
 	 */
-	public void loadPlatform(String filename) throws IOException, ClassNotFoundException{
+	public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
 
 	}
-	
-	
+
 	// End Management-related methods ****************************************
 
 	// Internal methods ****************************************
@@ -692,12 +693,16 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	private static Boolean checkAccountHandle(String handle) throws InvalidHandleException, IllegalHandleException {
 		if (Account.isHandleUnique(handle)) {
+			System.out.println("Handle: " + handle + " is unique");
 			if (Account.isHandleValid(handle)) {
 				return true;
 			} else {
+
 				throw new InvalidHandleException("Handle is invalid: " + handle);
+
 			}
 		} else {
+
 			throw new IllegalHandleException("Handle already exists: " + handle);
 		}
 

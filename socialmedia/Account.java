@@ -13,17 +13,23 @@ public class Account {
     private static int idCount = 10000000;
 
     public Account(String handle) throws IllegalHandleException, InvalidHandleException {
-        if (isHandleValid(handle)) {
-            if (isHandleUnique(handle)) {
-                this.handle = handle;
+        // if (isHandleValid(handle)) {
+        //     if (isHandleUnique(handle)) {
+        //         this.handle = handle;
+        //         handles.add(handle);
+        //         id = idCount;
+        //         idCount += 1;
+        //     } else {
+        //         throw new IllegalHandleException("Handle already exists: " + handle);
+        //     }
+        // } else {
+        //     throw new InvalidHandleException("Handle is invalid: " + handle);
+        // }
+
+        this.handle = handle;
+                handles.add(handle);
                 id = idCount;
                 idCount += 1;
-            } else {
-                throw new IllegalHandleException("Handle already exists: " + handle);
-            }
-        } else {
-            throw new InvalidHandleException("Handle is invalid: " + handle);
-        }
 
     }
 
