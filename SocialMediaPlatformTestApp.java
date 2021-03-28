@@ -2,6 +2,7 @@ import socialmedia.SocialMedia;
 import socialmedia.IllegalHandleException;
 import socialmedia.InvalidHandleException;
 import socialmedia.InvalidPostException;
+import socialmedia.PostIDNotRecognisedException;
 import socialmedia.SocialMediaPlatform;
 import socialmedia.AccountIDNotRecognisedException;
 import socialmedia.HandleNotRecognisedException;
@@ -61,12 +62,23 @@ public class SocialMediaPlatformTestApp {
         // void savePlatform(String filename);
         // void loadPlatform(String filename)
 
+        //IllegalHandleException 
+        //InvalidHandleException
+        //InvalidPostException
+        //PostIDNotRecognisedException
+        //AccountIDNotRecognisedException
+        //HandleNotRecognisedException
+
+
         // How should the errors be thrown?? Do we need to make them throwable
         // how to prevent the errors from changing the system??
 
         // Need to finish deletion method and stringbuilder method
         // need to do platform methods
 
+
+        // Testing both createAccount() methods, and both removeAccount() methods.
+        // Checking illegalHandleException is thrown properly
         try {
 
             id1 = platform.createAccount("my_handle1");
@@ -75,9 +87,10 @@ public class SocialMediaPlatformTestApp {
             id3 = platform.createAccount("my_handle1");
             System.out.println(platform.showAccount("my_handle1"));
             // String a = platform.showAccount("my_handle1");
-            assert (platform.getNumberOfAccounts() == 1) : "number of accounts registered in the system does not match";
+            assert (platform.getNumberOfAccounts() == 2) : "number of accounts registered in the system does not match";
 
             platform.removeAccount(id1);
+            platform.removeAccount("my_handle2");
             assert (platform.getNumberOfAccounts() == 0) : "number of accounts registered in the system does not match";
 
         } catch (IllegalHandleException e) {
@@ -93,19 +106,32 @@ public class SocialMediaPlatformTestApp {
             e.printStackTrace();
         }
 
+        // Testing createPost(), deletePost(), showAccount() and getTotalOriginalPosts()
+
         try {
             System.out.println(platform.showAccount("my_handle1"));
             int post1Id = platform.createPost("my_handle1", "My First Post teehehe");
             System.out.println(platform.showAccount("my_handle1"));
-            assert (platform.getTotalOriginalPosts() == 1) : "number of original posts registered in the system does not match";
+            assert (platform
+                    .getTotalOriginalPosts() == 1) : "number of original posts registered in the system does not match";
+            //platform.deletePost(post1Id);
+            assert (platform
+            .getTotalOriginalPosts() == 0) : "number of original posts registered in the system does not match";
         } catch (HandleNotRecognisedException e) {
-
+            assert (false) : "HandleNotRecognisedException thrown incorrectly";
             e.printStackTrace();
         } catch (InvalidPostException e) {
-
+            assert (false) : "InvalidPostException thrown incorrectly";
+            e.printStackTrace();
+        } catch (PostIDNotRecognisedException e) {
+            assert (false) : "PostIDNotRecognisedException thrown incorrectly";
             e.printStackTrace();
         }
        
+
+        try{
+            
+        }
 
 	}
 

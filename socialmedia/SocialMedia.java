@@ -327,35 +327,52 @@ public class SocialMedia implements SocialMediaPlatform {
 		Post deletedPost = getPostFromId(id);
 		GenericEmptyPost genericEmptyPost = new GenericEmptyPost(deletedPost);
 		Account deletedPostAccount = deletedPost.getAuthor();
-		Boolean hasChildren = true;
-		Post currentPost = deletedPost;
-		while (hasChildren) {
-			if (hasChildren(currentPost)) {
-				currentPost = currentPost.getReplies().get(0);
-			} else {
-				// delete current node, check next node on same level
 
+
+		if(deletedPost instanceof Endorsement){
+			posts.remove(deletedPost);
+			deletedPostAccount.getPosts().remove(deletedPost);
+			((Endorsement) deletedPost).getRefersTo().decrementEndorsements();
+
+		}else if(deletedPost instanceof Comment){
+			// remove comment from posts
+			// remove comment from authors account 
+			// decrement comments on parent post
+			// remove all endorsements and comments associated with deletedPost from author account
+			// redirect children to a generic empty post
+
+			posts.remove(deletedPost);
+			deletedPostAccount.getPosts().remove(deletedPost);
+			((Comment) deletedPost).getReplyingTo().decrementComments();
+			for(Post p : deletedPost.getReplies()){
+				if(p instanceof Comment){
+					((Comment) p).setReplyingTo(genericEmptyPost);
+					deletedPostAccount.decrementComments();
+				}else if (p instanceof Endorsement){
+					((Endorsement) p).setRefersTo(deletedPost);
+					deletedPostAccount.decrementEndorsements();
+				}	
+			}
+		}else{
+			// Original post
+			// delete post from posts 
+			// remove post from authors account
+			// remove all endorsements and comments associated with deletedPost from author account
+			// redirect children to generic empty post
+
+			posts.remove(deletedPost);
+			deletedPostAccount.getPosts().remove(deletedPost);
+			for(Post p : deletedPost.getReplies()){
+				if(p instanceof Comment){
+					((Comment) p).setReplyingTo(genericEmptyPost);
+					deletedPostAccount.decrementComments();
+				}else if (p instanceof Endorsement){
+					((Endorsement) p).setRefersTo(deletedPost);
+					deletedPostAccount.decrementEndorsements();
+				}	
 			}
 		}
 
-		// if the post youre deleting is a comment, it must be removed from
-		// posts(platform), from the account that coomented it, and from the post its
-		// replyting ot
-		// what should happen to child comments? generic empty post?
-		for (Post p : deletedPost.getReplies()) {
-			if ((p instanceof Endorsement) && (posts.contains(p))) {
-				posts.remove(p);
-				deletedPost.getReplies().remove(p);
-				deletedPost.decrementEndorsements();
-
-			} else if (p instanceof Comment) {
-				((Comment) p).setReplyingTo(genericEmptyPost);
-				posts.remove(p);
-				deletedPost.decrementEndorsements();
-			}
-		}
-		posts.remove(deletedPost);
-		deletedPostAccount.removePostFromAccount(deletedPost);
 	}
 
 	/**
