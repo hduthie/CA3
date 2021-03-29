@@ -1,6 +1,11 @@
 package socialmedia;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -220,6 +225,7 @@ public class SocialMedia implements SocialMediaPlatform {
 			throw new InvalidPostException("The post : " + message + " is invalid");
 		} else {
 			Post post = new Post(a, message);
+			posts.add(post);
 			a.addPostToAccount(post);
 			return post.getPostID();
 		}
@@ -262,6 +268,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		postEndorsed.addReply(endorsement);
 		postEndorsed.incrementEndorsements();
 		a.addPostToAccount(endorsement);
+		posts.add(endorsement);
 		return endorsement.getPostID();
 
 	}
@@ -302,6 +309,8 @@ public class SocialMedia implements SocialMediaPlatform {
 		postCommentedOn.addReply((Post) comment);
 		postCommentedOn.incrementComments();
 		commenter.addPostToAccount(comment);
+		postCommentedOn.getAuthor().incrementComments();
+		posts.add(comment);
 		return comment.getPostID();
 	}
 
@@ -328,48 +337,56 @@ public class SocialMedia implements SocialMediaPlatform {
 		GenericEmptyPost genericEmptyPost = new GenericEmptyPost(deletedPost);
 		Account deletedPostAccount = deletedPost.getAuthor();
 
+		if (deletedPost instanceof Endorsement) {
+			// remove endorsement from posts
+			// remove endorsement from posts on authors account
+			// decrement endorsements on parent post and parent post account
 
-		if(deletedPost instanceof Endorsement){
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
 			((Endorsement) deletedPost).getRefersTo().decrementEndorsements();
+			((Endorsement) deletedPost).getRefersTo().getAuthor().decrementEndorsements();
 
-		}else if(deletedPost instanceof Comment){
+		} else if (deletedPost instanceof Comment) {
 			// remove comment from posts
-			// remove comment from authors account 
+			// remove comment from authors account
 			// decrement comments on parent post
-			// remove all endorsements and comments associated with deletedPost from author account
+			// decrement comments on parent post account
+			// remove all endorsements and comments associated with deletedPost from author
+			// account
 			// redirect children to a generic empty post
 
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
 			((Comment) deletedPost).getReplyingTo().decrementComments();
-			for(Post p : deletedPost.getReplies()){
-				if(p instanceof Comment){
+			((Comment) deletedPost).getReplyingTo().getAuthor().decrementComments();
+			for (Post p : deletedPost.getReplies()) {
+				if (p instanceof Comment) {
 					((Comment) p).setReplyingTo(genericEmptyPost);
 					deletedPostAccount.decrementComments();
-				}else if (p instanceof Endorsement){
-					((Endorsement) p).setRefersTo(deletedPost);
+				} else if (p instanceof Endorsement) {
+					((Endorsement) p).setRefersTo(genericEmptyPost);
 					deletedPostAccount.decrementEndorsements();
-				}	
+				}
 			}
-		}else{
+		} else {
 			// Original post
-			// delete post from posts 
+			// delete post from posts
 			// remove post from authors account
-			// remove all endorsements and comments associated with deletedPost from author account
+			// remove all endorsements and comments associated with deletedPost from author
+			// account
 			// redirect children to generic empty post
 
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
-			for(Post p : deletedPost.getReplies()){
-				if(p instanceof Comment){
+			for (Post p : deletedPost.getReplies()) {
+				if (p instanceof Comment) {
 					((Comment) p).setReplyingTo(genericEmptyPost);
 					deletedPostAccount.decrementComments();
-				}else if (p instanceof Endorsement){
+				} else if (p instanceof Endorsement) {
 					((Endorsement) p).setRefersTo(deletedPost);
 					deletedPostAccount.decrementEndorsements();
-				}	
+				}
 			}
 		}
 
@@ -393,11 +410,20 @@ public class SocialMedia implements SocialMediaPlatform {
 	 */
 	public String showIndividualPost(int id) throws PostIDNotRecognisedException {
 		Post post = getPostFromId(id);
-
-		return "ID: " + post.getPostID() + "\nAccount: " + post.getAuthor().getHandle() + "\nNo. endorsements: "
-				+ post.getNumberOfEndorsements() + " | No. comments: " + post.getNumberOfComments() + "\n"
-				+ post.getMessage();
-
+		// if post is an og post then print like this:
+		if (post instanceof Endorsement) {
+			System.out.println("Endorsement: add nothing to stringbuilder");
+			return "";
+		} else if (post instanceof Comment) {
+			return "ID: " + post.getPostID() + "\n    Account: " + post.getAuthor().getHandle()
+					+ "\n    No. endorsements: " + post.getNumberOfEndorsements() + " | No. comments: "
+					+ post.getNumberOfComments() + "\n    " + post.getMessage() + "\n    ";
+		} else {
+			return "ID: " + post.getPostID() + "\nAccount: " + post.getAuthor().getHandle() + "\nNo. endorsements: "
+					+ post.getNumberOfEndorsements() + " | No. comments: " + post.getNumberOfComments() + "\n"
+					+ post.getMessage() + "\n";
+		}
+		// if post is a reply, add tab formatting and print like this:
 	}
 
 	/**
@@ -481,61 +507,87 @@ public class SocialMedia implements SocialMediaPlatform {
 		if (originalPost instanceof Endorsement) {
 			throw new NotActionablePostException("Endorsement posts do not have children.");
 		}
-		showIndividualPost(id);
+		;
 		Account originalPostAccount = originalPost.getAuthor();
 		Boolean hasChildren = true;
 		Post currentPost = originalPost;
 		int nodeIndexOnCurrentLevel = 0;
 
+		if (!hasChildren(currentPost)) {
+
+			// System.out.print("\n" + showIndividualPost(id)); // remove print statement
+			currentPost = null;
+		}
+		// System.out.println("A");
 		while (currentPost != null) {
-			// print current post
+			// System.out.println("B");
+			// System.out.print(showIndividualPost(currentPost.getPostID()));
+			postChildrenDetails.append(showIndividualPost(currentPost.getPostID()));
 
 			// can you go down?
 			if (hasChildren(currentPost)) {
+				// System.out.println("C");
 				// yes can go down
 				// going down (LHS)
+				// System.out.print("|\n| >");
+				postChildrenDetails.append("|\n| > ");
 				nodeIndexOnCurrentLevel = 0;
 				currentPost = currentPost.getReplies().get(nodeIndexOnCurrentLevel);
 			} else {
+				System.out.println("D");
 				// can't go down?
 				// can you go adjacent?
 				Boolean canGoAdjacent = false;
 				while (!(canGoAdjacent)) {
+					// System.out.println("E");
 
 					nodeIndexOnCurrentLevel += 1;
+					Post parent =null;
 
 					if (currentPost instanceof Comment) {
-						Post parent = ((Comment) currentPost).getReplyingTo();
-
-						// checking if you can go adjacent;
-						if (nodeIndexOnCurrentLevel < parent.getReplies().size()) {
-							// you go adjacent
-							currentPost = parent.getReplies().get(nodeIndexOnCurrentLevel);
-							canGoAdjacent = true;
-							// break out of while loop, go down as far as possible
-						} else {
-							canGoAdjacent = false;
-
-							// can't go adjacent, can you go up
-							Post parent1 = ((Comment) currentPost).getReplyingTo();
-							if (parent1 == originalPost) {
-								// can't go up. break
-								currentPost = null;
-							} else {
-								// can go up:
-								Post grandparent = ((Comment) parent1).getReplyingTo();
-								nodeIndexOnCurrentLevel = grandparent.getReplies().indexOf((parent1));
-								currentPost = parent1;
-							}
-						}
-
+						System.out.println("F");
+						parent = ((Comment) currentPost).getReplyingTo();
+					} else if (currentPost instanceof Endorsement) {
+						System.out.println("F2");
+						parent = ((Endorsement) currentPost).getRefersTo();
 					}
-				}
+					// checking if you can go adjacent;
+					if (nodeIndexOnCurrentLevel < parent.getReplies().size()) {
+						System.out.println("G");
+						// you go adjacent
+						currentPost = parent.getReplies().get(nodeIndexOnCurrentLevel);
+						System.out.println("G2");
+						canGoAdjacent = true;
+						// break out of while loop, go down as far as possible
+					} else {
+						System.out.println("H");
+						canGoAdjacent = false;
 
+						// can't go adjacent, can you go up
+						
+						if (parent == originalPost) {
+							System.out.println("I");
+							// can't go up. break
+							currentPost = null;
+							break;
+						} else {
+							// can go up:
+							System.out.println("J");
+							Post grandparent = ((Comment) parent).getReplyingTo();
+							nodeIndexOnCurrentLevel = grandparent.getReplies().indexOf((parent));
+							currentPost = parent;
+							postChildrenDetails.append("\n");
+						}
+					}
+
+				}
 			}
+
 		}
 
+		// System.out.println("Congrats you're out");
 		return postChildrenDetails;
+
 	}
 
 	// End Post-related methods ****************************************
@@ -651,6 +703,11 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * internal counters.
 	 */
 	public void erasePlatform() {
+		posts.clear();
+		accounts.clear();
+		Post.setChronologicalId(0);
+		Account.setIdCount(10000000);
+
 
 	}
 
@@ -663,6 +720,17 @@ public class SocialMedia implements SocialMediaPlatform {
 	 *                     store contents to the file
 	 */
 	public void savePlatform(String filename) throws IOException {
+		String fileName = filename + ".ser";
+		File outFile = new File(fileName);
+		try{
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(outFile));
+			oos.writeObject(accounts);
+			oos.writeObject(posts);
+			oos.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
 
 	}
 
@@ -680,6 +748,18 @@ public class SocialMedia implements SocialMediaPlatform {
 	 *                                loading
 	 */
 	public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
+		File inFile = new File(filename);
+		try(ObjectInputStream objStream= new ObjectInputStream(new FileInputStream(filename))){
+			Object obj = objStream.readObject();
+			if(obj instanceof ArrayList<Account>){
+				@SuppressWarnings("unchecked")
+				ArrayList<Account> importedAccounts = (ArrayList<Account>)obj;
+				accounts = importedAccounts;
+
+			}
+		}catch(IOException e){
+
+		}
 
 	}
 
@@ -704,6 +784,7 @@ public class SocialMedia implements SocialMediaPlatform {
 				return p;
 			}
 		}
+		System.out.println("CANT FIND POST FROM ID");
 		throw new PostIDNotRecognisedException("The post ID " + id + " is not recognised.");
 
 	}

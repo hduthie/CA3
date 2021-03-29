@@ -116,4 +116,14 @@ public class Account {
         return numberOfComments;
     }
 
+    public static int getIdCount() {
+        return idCount;
+    }
+
+    public static void setIdCount(int idCount) {
+        Account.idCount = idCount;
+    }
+
+    
+
 }

@@ -83,6 +83,14 @@ public class Post {
         return numberOfComments;
     }
 
+    public static int getChronologicalId() {
+        return chronologicalId;
+    }
+
+    public static void setChronologicalId(int chronologicalId) {
+        Post.chronologicalId = chronologicalId;
+    }
+
   
 
 }

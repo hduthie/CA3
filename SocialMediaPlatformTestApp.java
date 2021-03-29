@@ -2,6 +2,7 @@ import socialmedia.SocialMedia;
 import socialmedia.IllegalHandleException;
 import socialmedia.InvalidHandleException;
 import socialmedia.InvalidPostException;
+import socialmedia.NotActionablePostException;
 import socialmedia.PostIDNotRecognisedException;
 import socialmedia.SocialMediaPlatform;
 import socialmedia.AccountIDNotRecognisedException;
@@ -39,6 +40,12 @@ public class SocialMediaPlatformTestApp {
         Integer id2;
         Integer id3;
 
+        int post1Id = 0;
+        int post2Id = 0;
+        int post3Id = 0;
+        int post4Id = 0;
+        StringBuilder str;
+
         // int createAccount(String handle);
         // int createAccount(String handle, String description);
         // void removeAccount(int id);
@@ -62,13 +69,12 @@ public class SocialMediaPlatformTestApp {
         // void savePlatform(String filename);
         // void loadPlatform(String filename)
 
-        //IllegalHandleException 
-        //InvalidHandleException
-        //InvalidPostException
-        //PostIDNotRecognisedException
-        //AccountIDNotRecognisedException
-        //HandleNotRecognisedException
-
+        // IllegalHandleException
+        // InvalidHandleException
+        // InvalidPostException
+        // PostIDNotRecognisedException
+        // AccountIDNotRecognisedException
+        // HandleNotRecognisedException
 
         // How should the errors be thrown?? Do we need to make them throwable
         // how to prevent the errors from changing the system??
@@ -76,22 +82,52 @@ public class SocialMediaPlatformTestApp {
         // Need to finish deletion method and stringbuilder method
         // need to do platform methods
 
-
         // Testing both createAccount() methods, and both removeAccount() methods.
         // Checking illegalHandleException is thrown properly
+
+
         try {
+
+            // ------ create a bunch of accounts 
 
             id1 = platform.createAccount("my_handle1");
             id2 = platform.createAccount("my_handle2",
                     "This account description tests the second create account method");
-            id3 = platform.createAccount("my_handle1");
-            System.out.println(platform.showAccount("my_handle1"));
+
+            // System.out.println(platform.showAccount("my_handle1"));
             // String a = platform.showAccount("my_handle1");
             assert (platform.getNumberOfAccounts() == 2) : "number of accounts registered in the system does not match";
 
-            platform.removeAccount(id1);
-            platform.removeAccount("my_handle2");
+            // platform.removeAccount(id1);
+            // platform.removeAccount("my_handle2");
             assert (platform.getNumberOfAccounts() == 0) : "number of accounts registered in the system does not match";
+
+            post1Id = platform.createPost("my_handle1", "My First Post teehehe");
+            System.out.println();
+
+            // System.out.println(platform.showIndividualPost(post1Id));
+            // System.out.println("post created");
+            // System.out.println(platform.showAccount("my_handle1"));
+            // System.out.println();
+            System.out.println();
+            post2Id = platform.commentPost("my_handle1", post1Id, "My First comment");
+            post3Id = platform.commentPost("my_handle2", post2Id, "Replying to your comment");
+            post4Id = platform.endorsePost("my_handle1", post1Id);
+            System.out.println(post4Id);
+            // System.out.println("next up individual posts");
+            // System.out.println(platform.showIndividualPost(post1Id));
+            // System.out.println(platform.showIndividualPost(post2Id));
+            str = platform.showPostChildrenDetails(post1Id);
+            System.out.println(str.toString());
+            // System.out.println(" done");
+
+            assert (platform
+                    .getTotalOriginalPosts() == 1) : "number of original posts registered in the system does not match";
+            // platform.deletePost(post1Id);
+            assert (platform
+                    .getTotalOriginalPosts() == 0) : "number of original posts registered in the system does not match";
+
+            platform.removeAccount(id1);
 
         } catch (IllegalHandleException e) {
             System.out.println(e.getMessage());
@@ -100,39 +136,22 @@ public class SocialMediaPlatformTestApp {
             System.out.println(e.getMessage());
             assert (false) : "InvalidHandleException thrown incorrectly";
         } catch (AccountIDNotRecognisedException e) {
+
             assert (false) : "AccountIDNotRecognisedException thrown incorrectly";
         } catch (HandleNotRecognisedException e) {
 
             e.printStackTrace();
-        }
-
-        // Testing createPost(), deletePost(), showAccount() and getTotalOriginalPosts()
-
-        try {
-            System.out.println(platform.showAccount("my_handle1"));
-            int post1Id = platform.createPost("my_handle1", "My First Post teehehe");
-            System.out.println(platform.showAccount("my_handle1"));
-            assert (platform
-                    .getTotalOriginalPosts() == 1) : "number of original posts registered in the system does not match";
-            //platform.deletePost(post1Id);
-            assert (platform
-            .getTotalOriginalPosts() == 0) : "number of original posts registered in the system does not match";
-        } catch (HandleNotRecognisedException e) {
-            assert (false) : "HandleNotRecognisedException thrown incorrectly";
-            e.printStackTrace();
         } catch (InvalidPostException e) {
             assert (false) : "InvalidPostException thrown incorrectly";
-            e.printStackTrace();
+
         } catch (PostIDNotRecognisedException e) {
+            e.printStackTrace();
             assert (false) : "PostIDNotRecognisedException thrown incorrectly";
+
+        } catch (NotActionablePostException e) {
             e.printStackTrace();
         }
-       
 
-        try{
-            
-        }
-
-	}
+    }
 
 }
