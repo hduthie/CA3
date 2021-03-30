@@ -1,5 +1,7 @@
 package socialmedia;
-
+/**
+ * Exception: if the handle is empty, has more than 30 characters, or has white spaces.
+ */
 public class InvalidHandleException extends Exception {
 
     /**
