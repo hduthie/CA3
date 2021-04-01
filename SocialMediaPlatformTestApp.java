@@ -26,7 +26,7 @@ public class SocialMediaPlatformTestApp {
      * @param args not used
      * @throws AccountIDNotRecognisedException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args){
         System.out.println("The system compiled and started the execution...");
 
         SocialMediaPlatform platform = new SocialMedia();
@@ -86,7 +86,7 @@ public class SocialMediaPlatformTestApp {
         // int commentPost(String handle, int id, String message)
         // void deletePost(int id)
         // String showIndividualPost(int id);
-        
+
         // StringBuilder showPostChildrenDetails(int id); ISSUES
         // int getNumberOfAccounts();
         // int getTotalOriginalPosts();

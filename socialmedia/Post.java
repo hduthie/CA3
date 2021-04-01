@@ -57,6 +57,10 @@ public class Post {
         replies.add(post);
     }
 
+    public void removeReply(Post post){
+        replies.remove(post);
+    }
+
     public void incrementEndorsements(){
         numberOfEndorsements +=1;
     }
