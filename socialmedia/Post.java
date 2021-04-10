@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.io.Serializable;
 
 /**
- * Post class cretes a social media post
+ * Post class creates a social media post
  */
 public class Post implements Serializable {
 
