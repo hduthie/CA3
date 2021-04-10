@@ -3,6 +3,10 @@ package socialmedia;
 //import java.util.ArrayList;
 
 public class Endorsement extends Post {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     Post refersTo;
 
     public Endorsement(Account author, Post refersTo) {

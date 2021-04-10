@@ -4,7 +4,11 @@ package socialmedia;
 
 // comment extends Post
 public class Comment extends Post {
-    private Post replyingTo; 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private Post replyingTo;
 
 
     public Comment(Account author, String message, Post replyingTo) {

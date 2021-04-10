@@ -1,14 +1,13 @@
 package socialmedia;
 
-public class NotActionablePostException extends Exception{
-
+public class NotActionablePostException 
+  extends RuntimeException {
     /**
      *
      */
     private static final long serialVersionUID = 1L;
 
-    public NotActionablePostException(String message) {
-        super(message);
+    public NotActionablePostException(String errorMessage, Throwable err) {
+        super(errorMessage, err);
     }
-
 }

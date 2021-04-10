@@ -1,6 +1,10 @@
 package socialmedia;
 
 public class GenericEmptyPost extends Post{
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private Post replyingTo = null;
 
 

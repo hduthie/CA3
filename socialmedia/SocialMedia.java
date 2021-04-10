@@ -29,10 +29,13 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * 
 	 */
 	public int createAccount(String handle) throws IllegalHandleException, InvalidHandleException {
+		int id = 0;
+		
 		checkAccountHandle(handle);
 		Account account = new Account(handle);
 		accounts.add(account);
-		return account.getId();
+		id = account.getId();
+		return id;
 	}
 
 	/**
@@ -87,7 +90,8 @@ public class SocialMedia implements SocialMediaPlatform {
 		}
 		accounts.remove(removeAccount);
 		if (!accountIdRecognised) {
-			throw new AccountIDNotRecognisedException("The account ID has not been recognised.");
+			Exception e = new Exception();
+			throw new AccountIDNotRecognisedException("The account ID "  + id + " has not been recognised.", e);
 		}
 
 		for (Post post : posts) {
@@ -200,7 +204,8 @@ public class SocialMedia implements SocialMediaPlatform {
 			}
 		}
 		if (!handleRecognised) {
-			throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.");
+			Exception e = new Exception();
+			throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.", e);
 		}
 	}
 
@@ -222,7 +227,8 @@ public class SocialMedia implements SocialMediaPlatform {
 	public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
 		Account a = findAccountFromHandle(handle);
 		if (message.equals("") || message.length() > 100) {
-			throw new InvalidPostException("The post : " + message + " is invalid");
+			Exception e = new Exception();
+			throw new InvalidPostException("The post : " + message + " is invalid", e);
 		} else {
 			Post post = new Post(a, message);
 			posts.add(post);
@@ -262,11 +268,20 @@ public class SocialMedia implements SocialMediaPlatform {
 		Account a = findAccountFromHandle(handle);
 		Post postEndorsed = getPostFromId(id);
 		if (postEndorsed instanceof Endorsement) {
-			throw new NotActionablePostException("Endorsement posts are not endorsable.");
+			Exception e = new Exception();
+			throw new NotActionablePostException("Endorsement posts are not endorsable.", e);
+		}
+		for(Post p: posts){
+			if(p instanceof Endorsement){
+				if(p.getAuthor() == a && ((Endorsement) p).getRefersTo() == postEndorsed){
+					return p.getPostID();
+				}
+			}
 		}
 		Endorsement endorsement = new Endorsement(a, postEndorsed);
 		postEndorsed.addReply(endorsement);
 		postEndorsed.incrementEndorsements();
+		postEndorsed.getAuthor().incrementEndorsements();
 		a.addPostToAccount(endorsement);
 		posts.add(endorsement);
 		return endorsement.getPostID();
@@ -303,15 +318,23 @@ public class SocialMedia implements SocialMediaPlatform {
 		Post postCommentedOn = getPostFromId(id);
 		Account commenter = findAccountFromHandle(handle);
 		if (postCommentedOn instanceof Endorsement) {
-			throw new NotActionablePostException("You cannot comment on an Endorsement.");
+			Exception e = new Exception();
+			throw new NotActionablePostException("You cannot comment on an Endorsement.", e);
 		}
-		Comment comment = new Comment(commenter, message, postCommentedOn);
-		postCommentedOn.addReply((Post) comment);
-		postCommentedOn.incrementComments();
-		commenter.addPostToAccount(comment);
-		postCommentedOn.getAuthor().incrementComments();
-		posts.add(comment);
-		return comment.getPostID();
+
+		if (message.equals("") || message.length() > 100) {
+			Exception e = new Exception();
+			throw new InvalidPostException("The post : " + message + " is invalid", e);
+		} else {
+			Comment comment = new Comment(commenter, message, postCommentedOn);
+			postCommentedOn.addReply((Post) comment);
+			postCommentedOn.incrementComments();
+			commenter.addPostToAccount(comment);
+			postCommentedOn.getAuthor().incrementComments();
+			posts.add(comment);
+			return comment.getPostID();
+		}
+
 	}
 
 	/**
@@ -342,11 +365,12 @@ public class SocialMedia implements SocialMediaPlatform {
 			// remove endorsement from posts
 			// remove endorsement from posts on authors account
 			// decrement endorsements on parent post and parent post account
-
+			parentOfDeletedPost = ((Endorsement) deletedPost).getRefersTo();
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
-			((Endorsement) deletedPost).getRefersTo().decrementEndorsements();
-			((Endorsement) deletedPost).getRefersTo().getAuthor().decrementEndorsements();
+			parentOfDeletedPost.decrementEndorsements();
+			parentOfDeletedPost.removeReply(deletedPost);
+			parentOfDeletedPost.getAuthor().decrementEndorsements();
 
 		} else if (deletedPost instanceof Comment) {
 			// remove comment from posts
@@ -365,7 +389,7 @@ public class SocialMedia implements SocialMediaPlatform {
 			parentOfDeletedPost.removeReply(deletedPost);
 			parentOfDeletedPost.getAuthor().decrementComments();
 			if(!deletedPost.getReplies().isEmpty()){
-				((Comment) deletedPost).getReplyingTo().addReply(genericEmptyPost);
+				parentOfDeletedPost.addReply(genericEmptyPost);
 			}
 			for (Post p : deletedPost.getReplies()) {
 				if (p instanceof Comment) {
@@ -445,7 +469,7 @@ public class SocialMedia implements SocialMediaPlatform {
 	 * @throws PostIDNotRecognisedException if the ID does not match to any post in
 	 *                                      the system.
 	 */
-	public String showIndividualPost(Post post, int indentation) throws PostIDNotRecognisedException {
+	public String showIndividualPost(Post post, int indentation, Boolean firstReply) throws PostIDNotRecognisedException {
 		
 		String indent = "";
 		for (int i = 0; i < indentation; i++) {
@@ -457,15 +481,30 @@ public class SocialMedia implements SocialMediaPlatform {
 			return "";
 
 		} else if (post instanceof GenericEmptyPost){
-		
-			return indentationToString(indentation-1) +"|\n" + indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: null" + "\n"
+			if(firstReply){
+				return indentationToString(indentation-1) +"|\n" + indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: null" + "\n"
 				+ indent + "No. endorsements: " + post.getNumberOfEndorsements() + " | No. comments: "
 				+ post.getNumberOfComments() + "\n" + indent + post.getMessage() + "\n";
+			}else{
+				return indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: null" + "\n"
+				+ indent + "No. endorsements: " + post.getNumberOfEndorsements() + " | No. comments: "
+				+ post.getNumberOfComments() + "\n" + indent + post.getMessage() + "\n";
+			}
+		
+			
 		} else {
 			getPostFromId(post.getPostID());
-			return indentationToString(indentation-1) +"|\n" + indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: " + post.getAuthor().getHandle() + "\n"
+			if (firstReply){
+				return indentationToString(indentation-1) +"|\n" + indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: " + post.getAuthor().getHandle() + "\n"
 				+ indent + "No. endorsements: " + post.getNumberOfEndorsements() + " | No. comments: "
 				+ post.getNumberOfComments() + "\n" + indent + post.getMessage() + "\n";
+			}else{
+				return indentationToString(indentation-1) +  "| > ID: " + post.getPostID() + "\n" + indent + "Account: " + post.getAuthor().getHandle() + "\n"
+				+ indent + "No. endorsements: " + post.getNumberOfEndorsements() + " | No. comments: "
+				+ post.getNumberOfComments() + "\n" + indent + post.getMessage() + "\n";
+			}
+			
+			
 		}
 
 		
@@ -551,7 +590,8 @@ public class SocialMedia implements SocialMediaPlatform {
 		StringBuilder postChildrenDetails = new StringBuilder();
 		Post originalPost = getPostFromId(id);
 		if (originalPost instanceof Endorsement) {
-			throw new NotActionablePostException("Endorsement posts do not have children.");
+			Exception e = new Exception();
+			throw new NotActionablePostException("Endorsement posts do not have children.", e);
 		}
 		
 		Account originalPostAccount = originalPost.getAuthor();
@@ -559,6 +599,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		Post currentPost = originalPost;
 		int nodeIndexOnCurrentLevel = 0;
 		int indent = 0;
+		Boolean firstReply = false;
 
 		if (!hasChildren(currentPost) ){
 			postChildrenDetails.append(showIndividualPost(currentPost.getPostID()));
@@ -588,17 +629,18 @@ public class SocialMedia implements SocialMediaPlatform {
 			if(indent == 0){
 				postChildrenDetails.append(showIndividualPost(currentPost.getPostID()));
 			}else{
-				postChildrenDetails.append(showIndividualPost(currentPost, indent));
+				postChildrenDetails.append(showIndividualPost(currentPost, indent, firstReply));
 			}
 
 			// can you go down?
 			if (hasChildren(currentPost)) {
 
-				// are we missing some indenata
+				// are we missing some indent
 				//postChildrenDetails.append(indentationToString(indent) +"|\n" + indentationToString(indent) +  "| > ");
 				nodeIndexOnCurrentLevel = 0;
 				currentPost = currentPost.getReplies().get(nodeIndexOnCurrentLevel);
 				indent+= 1;
+				firstReply = true;
 			} else {
 				
 				// can't go down?
@@ -628,6 +670,7 @@ public class SocialMedia implements SocialMediaPlatform {
 						currentPost = parent.getReplies().get(nodeIndexOnCurrentLevel);
 						//postChildrenDetails.append(indentationToString(indent) +"|\n" + indentationToString(indent) +  "| > ");
 						canGoAdjacent = true;
+						firstReply = false;
 						// break out of while loop, go down as far as possible
 					} else {
 						//System.out.println("H");
@@ -767,7 +810,9 @@ public class SocialMedia implements SocialMediaPlatform {
 		Account mostEndorsedAccount = null;
 
 		for (Account account : accounts) {
+			System.out.println(account.getHandle() + ": " + account.getNumberOfEndorsements());
 			if (account.getNumberOfEndorsements() > mostEndorsements) {
+				System.out.println("OK");
 				mostEndorsedAccount = account;
 				mostEndorsements = account.getNumberOfEndorsements();
 			}
@@ -805,6 +850,7 @@ public class SocialMedia implements SocialMediaPlatform {
 			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(outFile));
 			oos.writeObject(accounts);
 			oos.writeObject(posts);
+			oos.flush();
 			oos.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -826,18 +872,36 @@ public class SocialMedia implements SocialMediaPlatform {
 	 *                                loading
 	 */
 	public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
-		// File inFile = new File(filename);
-		// try (ObjectInputStream objStream = new ObjectInputStream(new FileInputStream(filename))) {
-		// 	Object obj = objStream.readObject();
-		// 	if (obj instanceof ArrayList<Account>) {
-		// 		@SuppressWarnings("unchecked")
-		// 		ArrayList<Account> importedAccounts = (ArrayList<Account>) obj;
-		// 		accounts = importedAccounts;
+		try (ObjectInputStream objStream = new ObjectInputStream(new FileInputStream(filename))) {
+			Object obj = objStream.readObject();
+			System.out.println("------------------------------------------");
 
-		// 	}
-		// } catch (IOException e) {
+			if (obj instanceof ArrayList<?>) {
+				@SuppressWarnings("unchecked")
+				ArrayList<Account> importedAccounts = (ArrayList<Account>) obj;
+				accounts = importedAccounts;
+				for(Account a : importedAccounts){
+					System.out.println(a.getHandle());
+				}
+			}
 
-		// }
+			Object obj2 = objStream.readObject();
+			if (obj2 instanceof ArrayList<?>) {
+				@SuppressWarnings("unchecked")
+				ArrayList<Post> importedPosts = (ArrayList<Post>) obj2;
+				posts = importedPosts;
+				for(Post p : importedPosts){
+					System.out.println(p.getMessage());
+				}
+			}
+
+
+				
+				
+
+		} catch (IOException e) {
+
+		}
 
 	}
 
@@ -845,14 +909,15 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	// Internal methods ****************************************
 
-	private Account findAccountFromHandle(String handle) throws HandleNotRecognisedException {
+	public Account findAccountFromHandle(String handle) throws HandleNotRecognisedException {
 
 		for (Account a : accounts) {
 			if (a.getHandle().equals(handle)) {
 				return a;
 			}
 		}
-		throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.");
+		Exception e = new Exception();
+		throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.", e);
 
 	}
 
@@ -865,24 +930,23 @@ public class SocialMedia implements SocialMediaPlatform {
 				return p;
 			}
 		}
-		System.out.println("CANT FIND POST FROM ID");
-		throw new PostIDNotRecognisedException("The post ID " + id + " is not recognised.");
+		Exception e = new Exception();
+		throw new PostIDNotRecognisedException("The post ID " + id + " is not recognised.", e);
 
 	}
 
 	private static Boolean checkAccountHandle(String handle) throws InvalidHandleException, IllegalHandleException {
 		if (Account.isHandleUnique(handle)) {
-			System.out.println("Handle: " + handle + " is unique");
 			if (Account.isHandleValid(handle)) {
 				return true;
 			} else {
-
-				throw new InvalidHandleException("Handle is invalid: " + handle);
+				Exception e = new Exception();
+				throw new InvalidHandleException("Handle is invalid: " + handle, e);
 
 			}
 		} else {
-
-			throw new IllegalHandleException("Handle already exists: " + handle);
+			Exception e = new Exception();
+			throw new IllegalHandleException("Handle already exists: " + handle, e);
 		}
 
 	}

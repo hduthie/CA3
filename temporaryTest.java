@@ -5,12 +5,14 @@ import socialmedia.InvalidHandleException;
 import socialmedia.InvalidPostException;
 import socialmedia.NotActionablePostException;
 import socialmedia.PostIDNotRecognisedException;
+
+import java.io.IOException;
+
 import socialmedia.AccountIDNotRecognisedException;
 import socialmedia.HandleNotRecognisedException;
 
-
 public class temporaryTest {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         System.out.println("The system compiled and started the execution...");
 
         SocialMediaPlatform platform = new SocialMedia();
@@ -111,11 +113,8 @@ public class temporaryTest {
 
             assert (platform.getNumberOfAccounts() == 3) : "number of accounts registered in the system does not match";
 
-
-
             id5 = platform.createAccount("my_handle5");
             assert (platform.getNumberOfAccounts() == 5) : "number of accounts registered in the system does not match";
-
 
             // Creating Original Posts ---------------
             // Testing createPost(String handle, String message)
@@ -126,7 +125,6 @@ public class temporaryTest {
             post4 = platform.createPost("my_handle1", "I'm vegan now :) ");
 
             assert (platform.getTotalOriginalPosts() == 4) : "number of Posts registered in the system does not match";
-
 
             // Creating Endorsement Posts ------------
             // Testing endorsePost(String handle, int id)
@@ -141,38 +139,33 @@ public class temporaryTest {
             assert (platform
                     .getTotalEndorsmentPosts() == 7) : "number of Endorsement Posts registered in the system does not match";
 
-
             // Creating Comment Posts ------------------
             // Testing commentPost(String handle, int id, String message)
 
             comment1 = platform.commentPost("my_handle2", post1, "I actually hate strawberries, they're disgusting. ");
             comment2 = platform.commentPost("my_handle2", post3, "I'm a Leo!!!");
             comment3 = platform.commentPost("my_handle1", comment1, "No need to be rude!");
-            comment4 = platform.commentPost("my_handle3", comment1, "wow ok but who asked ");
+            comment4 = platform.commentPost("my_handle3", post1, "wow ok but who asked ");
             comment5 = platform.commentPost("my_handle3", comment3, "I agree.");
             comment6 = platform.commentPost("my_handle1", post3, "I'm a Gemini xxx");
             assert (platform
                     .getTotalCommentPosts() == 6) : "number of Comment Posts registered in the system does not match";
-
-
 
             // Showing Individual Post ----------------
             // Testing showIndividualPost(int id)
 
             String postDetails = platform.showIndividualPost(post1);
             System.out.println(postDetails);
-            assert(postDetails.length() != 0 ): "show individual post is not functioning correctly";
+            assert (postDetails.length() != 0) : "show individual post is not functioning correctly";
 
-
-
-            //ShowPostChildrenDetails()
+            // ShowPostChildrenDetails()
             System.out.println(platform.showIndividualPost(post2));
             System.out.println(platform.showIndividualPost(post3));
             System.out.println(platform.showIndividualPost(post4));
 
             System.out.println("-------------------------------------------------------------");
             System.out.print(platform.showPostChildrenDetails(post1));
-           
+
             // System.out.println("-------------------------------------------------------------");
             // System.out.print(platform.showPostChildrenDetails(post2));
 
@@ -181,7 +174,7 @@ public class temporaryTest {
 
             // System.out.println("-------------------------------------------------------------");
             // System.out.print(platform.showPostChildrenDetails(post4));
-            
+
             // System.out.println("-------------------------------------------------------------");
             // System.out.print(platform.showPostChildrenDetails(comment1));
 
@@ -201,13 +194,13 @@ public class temporaryTest {
 
             System.out.println("-------------------------------------------------------------");
             System.out.print(platform.showPostChildrenDetails(comment3));
-           
 
+            platform.savePlatform("platform");
+            platform.erasePlatform();
+            platform.loadPlatform("platform.ser");
 
-
-
-
- 
+            System.out.println("-------------------------------------------------------------");
+            System.out.print(platform.showPostChildrenDetails(post1));
 
         } catch (IllegalHandleException e) {
             System.out.println(e.getMessage());
@@ -226,6 +219,12 @@ public class temporaryTest {
             assert (false) : "PostIDNotRecognisedException thrown incorrectly";
 
         } catch (NotActionablePostException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 

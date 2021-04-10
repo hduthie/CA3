@@ -1,14 +1,14 @@
 package socialmedia;
 
-public class AccountIDNotRecognisedException extends Exception{
 
+public class AccountIDNotRecognisedException 
+  extends RuntimeException {
     /**
      *
      */
     private static final long serialVersionUID = 1L;
 
-    public AccountIDNotRecognisedException(String message) {
-        super(message);
+    public AccountIDNotRecognisedException(String errorMessage, Throwable err) {
+        super(errorMessage, err);
     }
-
 }

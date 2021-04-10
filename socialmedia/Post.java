@@ -1,10 +1,15 @@
 package socialmedia;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class Post {
+public class Post implements Serializable{
 
-    protected int postID; 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    protected int postID;
     protected Account author;
     protected String message;
     protected int numberOfEndorsements = 0;

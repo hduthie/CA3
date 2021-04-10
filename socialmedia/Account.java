@@ -1,30 +1,21 @@
 package socialmedia;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class Account {
-    private int id; // numerical identifier
-    private String handle; // unique
-    private String description; // can be empty
+
+public class Account implements Serializable{
+    private int id; 
+    private String handle; 
+    private String description; 
     private int numberOfEndorsements = 0;
     private int numberOfComments = 0;
     private ArrayList<Post> posts = new ArrayList<Post>();
     private static ArrayList<String> handles = new ArrayList<String>();
     private static int idCount = 10000000;
+    private static final long serialVersionUID = 1L;
 
-    public Account(String handle) throws IllegalHandleException, InvalidHandleException {
-        // if (isHandleValid(handle)) {
-        //     if (isHandleUnique(handle)) {
-        //         this.handle = handle;
-        //         handles.add(handle);
-        //         id = idCount;
-        //         idCount += 1;
-        //     } else {
-        //         throw new IllegalHandleException("Handle already exists: " + handle);
-        //     }
-        // } else {
-        //     throw new InvalidHandleException("Handle is invalid: " + handle);
-        // }
+    public Account(String handle){
 
         this.handle = handle;
                 handles.add(handle);

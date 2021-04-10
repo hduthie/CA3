@@ -5,6 +5,9 @@ import socialmedia.InvalidHandleException;
 import socialmedia.InvalidPostException;
 import socialmedia.NotActionablePostException;
 import socialmedia.PostIDNotRecognisedException;
+
+import java.io.IOException;
+
 import socialmedia.AccountIDNotRecognisedException;
 import socialmedia.HandleNotRecognisedException;
 
@@ -26,7 +29,7 @@ public class SocialMediaPlatformTestApp {
      * @param args not used
      * @throws AccountIDNotRecognisedException
      */
-    public static void main(String[] args){
+    public static void main(String[] args) {
         System.out.println("The system compiled and started the execution...");
 
         SocialMediaPlatform platform = new SocialMedia();
@@ -86,8 +89,7 @@ public class SocialMediaPlatformTestApp {
         // int commentPost(String handle, int id, String message)
         // void deletePost(int id)
         // String showIndividualPost(int id);
-
-        // StringBuilder showPostChildrenDetails(int id); ISSUES
+        // StringBuilder showPostChildrenDetails(int id);
         // int getNumberOfAccounts();
         // int getTotalOriginalPosts();
         // int getTotalEndorsmentPosts()
@@ -108,12 +110,6 @@ public class SocialMediaPlatformTestApp {
         // How should the errors be thrown?? Do we need to make them throwable
         // how to prevent the errors from changing the system??
 
-        // Need to finish deletion method and stringbuilder method
-        // need to do platform methods
-
-        // Testing both createAccount() methods, and both removeAccount() methods.
-        // Checking illegalHandleException is thrown properly
-
         try {
 
             // Creating Accounts ------------------
@@ -128,21 +124,36 @@ public class SocialMediaPlatformTestApp {
             assert (platform.getNumberOfAccounts() == 3) : "number of accounts registered in the system does not match";
 
             // Checking illegalHandleException (handle already exists)
+            try {
+                id4 = platform.createAccount("my_handle1", "This account's handle is illegal");
+                assert (platform.getNumberOfAccounts() == 3) : "illegalHandleException has not thrown";
+            } catch (IllegalHandleException e) {
+                System.out.println(e.getMessage());
+            }
 
-            id4 = platform.createAccount("my_handle1", "This account's handle is illegal");
-            assert (platform.getNumberOfAccounts() == 3) : "illegalHandleException has not thrown";
             id4 = platform.createAccount("my_handle4", "This account's handle is not illegal");
             assert (platform.getNumberOfAccounts() == 4) : "number of accounts registered in the system does not match";
 
             // Checking invalidHandleException (handle is empty, has more than 30
             // characters, or has white spaces.)
-
-            id5 = platform.createAccount("");
-            assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
-            id5 = platform.createAccount("ThisIsMoreThanThirtyCharacters!");
-            assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
-            id5 = platform.createAccount("my handle 5");
-            assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
+            try {
+                id5 = platform.createAccount("");
+                assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
+            try {
+                id5 = platform.createAccount("ThisIsMoreThanThirtyCharacters!");
+                assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
+            try {
+                id5 = platform.createAccount("my handle 5");
+                assert (platform.getNumberOfAccounts() == 4) : "invalidHandleException has not thrown";
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
 
             id5 = platform.createAccount("my_handle5");
             assert (platform.getNumberOfAccounts() == 5) : "number of accounts registered in the system does not match";
@@ -151,15 +162,24 @@ public class SocialMediaPlatformTestApp {
             // Testing removeAccount(String handle) , removeAccount(int id)
 
             // Checking HandleNotRecognisedException
-            platform.removeAccount("my_handle");
-            assert (platform.getNumberOfAccounts() == 4) : "HandleNotRecognisedException has not thrown";
+            try {
+                platform.removeAccount("my_handle");
+                assert (platform.getNumberOfAccounts() == 4) : "HandleNotRecognisedException has not thrown";
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+
             platform.removeAccount("my_handle4");
             assert (platform.getNumberOfAccounts() == 4) : "number of accounts registered in the system does not match";
 
             // Checking AccountIDNotRecognisedException
+            try {
+                platform.removeAccount(27);
+                assert (platform.getNumberOfAccounts() == 3) : "AccountIDNotRecognisedException has not thrown";
+            } catch (AccountIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
 
-            platform.removeAccount(27);
-            assert (platform.getNumberOfAccounts() == 3) : "AccountIDNotRecognisedException has not thrown";
             platform.removeAccount(id5);
             assert (platform.getNumberOfAccounts() == 3) : "number of accounts registered in the system does not match";
 
@@ -167,17 +187,36 @@ public class SocialMediaPlatformTestApp {
             // Testing changeAccountHandle(String oldHandle, String newHandle)
 
             // Checking HandleNotRecognisedException (old handle doesn't exist)
-            platform.changeAccountHandle("my_account", "my_new_account"); // should throw HandleNotRecognisedException
-
+            try {
+                platform.changeAccountHandle("my_account", "my_new_account"); // should throw
+                                                                              // HandleNotRecognisedException
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
             // Checking illegalHandleException (new handle already exists)
-            platform.changeAccountHandle("my_handle3", "my_handle2"); // should throw illegalHandleException
+            try {
+                platform.changeAccountHandle("my_handle3", "my_handle2"); // should throw illegalHandleException
+            } catch (IllegalHandleException e) {
+                System.out.println(e.getMessage());
+            }
 
             // Checking invalidHandleException (handle is empty, has more than 30
             // characters, or has white spaces.)
-            platform.changeAccountHandle("my_handle3", ""); // should throw invalidHandleException
-            platform.changeAccountHandle("my_handle3", "ThisIsMoreThanThirtyCharacters!"); // should throw
-                                                                                           // invalidHandleException
-            platform.changeAccountHandle("my_handle3", "my handle 3"); // should throw invalidHandleException
+            try {
+                platform.changeAccountHandle("my_handle3", "");
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
+            try {
+                platform.changeAccountHandle("my_handle3", "ThisIsMoreThanThirtyCharacters!");
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
+            try {
+                platform.changeAccountHandle("my_handle3", "my handle 3");
+            } catch (InvalidHandleException e) {
+                System.out.println(e.getMessage());
+            }
 
             platform.changeAccountHandle("my_handle3", "my_handle");
 
@@ -185,7 +224,11 @@ public class SocialMediaPlatformTestApp {
             // Testing showAccount(String handle)
 
             // Checking HandleNotRecognisedException
-            platform.showAccount("new_account"); // should throw a HandleNotRecognisedException
+            try {
+                platform.showAccount("new_account");
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
 
             System.out.println(platform.showAccount("my_handle"));
             String accountDetails = platform.showAccount("my_handle");
@@ -196,7 +239,11 @@ public class SocialMediaPlatformTestApp {
             System.out.println(platform.showAccount("my_handle1"));
 
             // Checking HandleNotRecognisedException
-            platform.updateAccountDescription("my_handle7", "This is the best account.");
+            try {
+                platform.updateAccountDescription("my_handle7", "This is the best account.");
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
 
             platform.updateAccountDescription("my_handle1", "This is the best account.");
             System.out.println(platform.showAccount("my_handle1"));
@@ -212,17 +259,28 @@ public class SocialMediaPlatformTestApp {
             assert (platform.getTotalOriginalPosts() == 4) : "number of Posts registered in the system does not match";
 
             // Checking HandleNotRecognisedException
-
-            post5 = platform.createPost("my_handle7", "My favourite fruit isn't strawberries!");
+            try {
+                post5 = platform.createPost("my_handle7", "My favourite fruit isn't strawberries!");
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalOriginalPosts() == 4) : "HandleNotRecognisedException has not thrown";
 
             // Checking InvalidPostException (message is empty or has more than 100
             // characters.)
-            post6 = platform.createPost("my_handle1", "");
+            try {
+                post6 = platform.createPost("my_handle1", "");
+            } catch (InvalidPostException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalOriginalPosts() == 4) : "InvalidPostException has not thrown";
 
-            post7 = platform.createPost("my_handle1",
-                    "Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall, All the king's horses and all the king's men, Couldn't put Humpty together again, Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall");
+            try {
+                post7 = platform.createPost("my_handle1",
+                        "Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall, All the king's horses and all the king's men, Couldn't put Humpty together again, Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall");
+            } catch (InvalidPostException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalOriginalPosts() == 4) : "InvalidPostException has not thrown";
 
             // Creating Endorsement Posts ------------
@@ -231,24 +289,37 @@ public class SocialMediaPlatformTestApp {
             like1 = platform.endorsePost("my_handle1", post1);
             like2 = platform.endorsePost("my_handle1", post3);
             like3 = platform.endorsePost("my_handle1", post4);
-            like4 = platform.endorsePost("my_handle2", post1);
+            like4 = platform.endorsePost("my_handle2", post4);
             like5 = platform.endorsePost("my_handle2", post3);
             like6 = platform.endorsePost("my_handle", post2);
             like7 = platform.endorsePost("my_handle", post3);
+            like8 = platform.endorsePost("my_handle", post1);
             assert (platform
-                    .getTotalEndorsmentPosts() == 7) : "number of Endorsement Posts registered in the system does not match";
+                    .getTotalEndorsmentPosts() == 8) : "number of Endorsement Posts registered in the system does not match";
 
             // Checking HandleNotRecognisedException
-            like8 = platform.endorsePost("my_handle7", post3);
-            assert (platform.getTotalEndorsmentPosts() == 7) : "HandleNotRecognisedException has not thrown";
+            try {
+                like8 = platform.endorsePost("my_handle7", post3);
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+            assert (platform.getTotalEndorsmentPosts() == 8) : "HandleNotRecognisedException has not thrown";
 
             // Checking PostIDNotRecognisedException
-            like9 = platform.endorsePost("my_handle2", 74);
-            assert (platform.getTotalEndorsmentPosts() == 7) : "PostIDNotRecognisedException has not thrown";
+            try {
+                like9 = platform.endorsePost("my_handle2", 74);
+            } catch (PostIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+            assert (platform.getTotalEndorsmentPosts() == 8) : "PostIDNotRecognisedException has not thrown";
 
             // Checking NotActionablePostException (if the ID refers to a endorsement post)
-            like9 = platform.endorsePost("my_handle2", like1);
-            assert (platform.getTotalEndorsmentPosts() == 7) : "NotActionablePostException has not thrown";
+            try {
+                like9 = platform.endorsePost("my_handle2", like1);
+            } catch (NotActionablePostException e) {
+                System.out.println(e.getMessage());
+            }
+            assert (platform.getTotalEndorsmentPosts() == 8) : "NotActionablePostException has not thrown";
 
             // Creating Comment Posts ------------------
             // Testing commentPost(String handle, int id, String message)
@@ -263,107 +334,126 @@ public class SocialMediaPlatformTestApp {
                     .getTotalCommentPosts() == 6) : "number of Comment Posts registered in the system does not match";
 
             // Checking HandleNotRecognisedException
-            int comment7 = platform.commentPost("my_handle7", post3, "I'm a Virgo btw");
+            try {
+                int comment7 = platform.commentPost("my_handle7", post3, "I'm a Virgo btw");
+            } catch (HandleNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalCommentPosts() == 6) : "HandleNotRecognisedException has not thrown";
 
             // Checking PostIDNotRecognisedException
-            int comment8 = platform.commentPost("my_handle1", 465, "I'm a Cancer.");
-            assert (platform.getTotalCommentPosts() == 6) : "PostIDNotRecognisedException has not thrown";
+            try {
+                int comment8 = platform.commentPost("my_handle1", 465, "I'm a Cancer.");
+                assert (platform.getTotalCommentPosts() == 6) : "PostIDNotRecognisedException has not thrown";
+            } catch (PostIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
 
             // Checking NotActionablePostException (if the ID refers to a endorsement post)
-            int comment9 = platform.commentPost("my_handle1", like1, "I'm an Aquarius");
+            try {
+                int comment9 = platform.commentPost("my_handle1", like1, "I'm an Aquarius");
+            } catch (NotActionablePostException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalCommentPosts() == 6) : "NotActionablePostException has not thrown";
 
             // CheckingInvalidPostException (message is empty or has more than 100
             // characters.)
-            int comment10 = platform.commentPost("my_handle1", post3, "");
+            try {
+                int comment10 = platform.commentPost("my_handle1", post3, "");
+            } catch (InvalidPostException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalCommentPosts() == 6) : "CheckingInvalidPostException has not thrown";
-            int comment11 = platform.commentPost("my_handle7", like1,
-                    "Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall, All the king's horses and all the king's men, Couldn't put Humpty together again, Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall");
+            try {
+                int comment11 = platform.commentPost("my_handle1", post3,
+                        "Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall, All the king's horses and all the king's men, Couldn't put Humpty together again, Humpty Dumpty sat on a wall, Humpty Dumpty had a great fall");
+            } catch (InvalidPostException e) {
+                System.out.println(e.getMessage());
+            }
             assert (platform.getTotalCommentPosts() == 6) : "CheckingInvalidPostException has not thrown";
 
             // Deleting Posts -------------
             // Testing deletePost(int id)
-
+            System.out.println("________________Account 1 has: " + ((SocialMedia) platform).findAccountFromHandle("my_handle1").getNumberOfEndorsements() + " endorsements");
+            
             platform.deletePost(like1);
-            assert (platform.getTotalEndorsmentPosts() == 6) : "Endorsement did not delete";
+            assert (platform.getTotalEndorsmentPosts() == 7) : "Endorsement did not delete";
             platform.deletePost(comment6);
             assert (platform.getTotalCommentPosts() == 5) : "Comment did not delete";
             platform.deletePost(post2); // has no comments
             assert (platform.getTotalOriginalPosts() == 3) : "Post did not delete";
-            platform.deletePost(post3); // has a comment
+            platform.deletePost(post1); // has a comment
             assert (platform.getTotalOriginalPosts() == 2) : "Post did not delete";
 
-            // Checking PostIDNotRecognisedException
-            platform.deletePost(756);
-            assert ((platform.getTotalOriginalPosts() == 2) && (platform.getTotalEndorsmentPosts() == 6)
-                    && (platform.getTotalCommentPosts() == 5)) : "PostIDNotRecognisedException was not thrown";
+            System.out.println("________________Account 1 has: " + ((SocialMedia) platform).findAccountFromHandle("my_handle1").getNumberOfEndorsements() + " endorsements");
 
+
+            // Checking PostIDNotRecognisedException
+            try {
+                platform.deletePost(756);
+            } catch (PostIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+            assert ((platform.getTotalOriginalPosts() == 2) && (platform.getTotalEndorsmentPosts() == 7)
+                    && (platform.getTotalCommentPosts() == 5)) : "PostIDNotRecognisedException was not thrown";
 
             // Showing Individual Post ----------------
             // Testing showIndividualPost(int id)
 
-            String postDetails = platform.showIndividualPost(post1);
+            String postDetails = platform.showIndividualPost(post3);
             System.out.println(postDetails);
-            assert(postDetails.length() != 0 ): "show individual post is not functioning correctly";
+            assert (postDetails.length() != 0) : "show individual post is not functioning correctly";
 
             // Checking PostIDNotRecognisedException
             String postDetails2 = "";
-            postDetails2 = platform.showIndividualPost(735);
-            assert(postDetails2.length() == 0 ): "PostIDNotRecognisedException has not thrown";
+            try {
+                postDetails2 = platform.showIndividualPost(735);
+            } catch (PostIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+            assert (postDetails2.length() == 0) : "PostIDNotRecognisedException has not thrown";
 
+            // Showing Post Children Details --------------------------
+            // Testing showPostChildrenDetails(int id)
 
-            
+            StringBuilder postChildrenDetails = platform.showPostChildrenDetails(post3);
 
+            // Checking PostIDNotRecognisedException
+            try {
+                postDetails2 = platform.showIndividualPost(735);
+            } catch (PostIDNotRecognisedException e) {
+                System.out.println(e.getMessage());
+            }
+            assert (postDetails2.length() == 0) : "PostIDNotRecognisedException has not thrown";
 
+            // Analytics
+            // Testing getNumberOfAccounts(), getTotalOriginalPosts(),
+            // getTotalEndorsmentPosts , getTotalCommentPosts
+            // getMostEndorsedPost(), getMostEndorsedAccount()
 
+            platform.getNumberOfAccounts();
+            platform.getTotalOriginalPosts();
+            platform.getTotalEndorsmentPosts();
+            platform.getTotalCommentPosts();
 
+            int mostEndorsedPostId = platform.getMostEndorsedPost();
+            assert (mostEndorsedPostId == post3) : "The most endorsed post is incorrect";
 
+            int mostEndorsedAccount = platform.getMostEndorsedAccount();
+            assert (mostEndorsedAccount == id3) : "The most endorsed account is incorrect";
 
+            // Saving, erasing, loading platform
+            // savePlatform(), erasePlatform(), loadPlatform()
 
-
-
-
-            // 
-
-            // System.out.println(platform.showAccount("my_handle1"));
-            // String a = platform.showAccount("my_handle1");
-            assert (platform.getNumberOfAccounts() == 2) : "number of accounts registered in the system does not match";
-
-            // platform.removeAccount(id1);
-            // platform.removeAccount("my_handle2");
-            assert (platform.getNumberOfAccounts() == 0) : "number of accounts registered in the system does not match";
-
-            post1Id = platform.createPost("my_handle1", "My First Post teehehe");
-            System.out.println();
-
-            // System.out.println(platform.showIndividualPost(post1Id));
-            // System.out.println("post created");
-            // System.out.println(platform.showAccount("my_handle1"));
-            // System.out.println();
-            System.out.println();
-            post2Id = platform.commentPost("my_handle1", post1Id, "My First comment");
-            post3Id = platform.commentPost("my_handle2", post2Id, "Replying to your comment");
-            post4Id = platform.endorsePost("my_handle1", post1Id);
-            System.out.println(post4Id);
-            // System.out.println("next up individual posts");
-            // System.out.println(platform.showIndividualPost(post1Id));
-            // System.out.println(platform.showIndividualPost(post2Id));
-            str = platform.showPostChildrenDetails(post1Id);
-            System.out.println(str.toString());
-            // System.out.println(" done");
-
-            assert (platform
-                    .getTotalOriginalPosts() == 1) : "number of original posts registered in the system does not match";
-            // platform.deletePost(post1Id);
-            assert (platform
-                    .getTotalOriginalPosts() == 0) : "number of original posts registered in the system does not match";
-
-            platform.removeAccount(id1);
+            platform.savePlatform("platform");
+            platform.erasePlatform();
+            platform.loadPlatform("platform.ser");
 
         } catch (IllegalHandleException e) {
             System.out.println(e.getMessage());
             assert (false) : "IllegalHandleException thrown incorrectly";
+
         } catch (InvalidHandleException e) {
             System.out.println(e.getMessage());
             assert (false) : "InvalidHandleException thrown incorrectly";
@@ -381,6 +471,12 @@ public class SocialMediaPlatformTestApp {
             assert (false) : "PostIDNotRecognisedException thrown incorrectly";
 
         } catch (NotActionablePostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+
             e.printStackTrace();
         }
 
