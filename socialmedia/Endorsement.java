@@ -1,17 +1,20 @@
 package socialmedia;
 
-//import java.util.ArrayList;
-
+/**
+ * Endorsement class to create an Endorsement object
+ */
 public class Endorsement extends Post {
-    /**
-     *
-     */
     private static final long serialVersionUID = 1L;
     Post refersTo;
 
+    /**
+     * Creates an Endorsement object extending a Post object with a predefined
+     * message
+     * 
+     * @param author   the author of the endorsement
+     * @param refersTo the post being endorsed
+     */
     public Endorsement(Account author, Post refersTo) {
-
-        // add this endorsement to the repleis of the OG post 
         super(author, "EP@" + author.getHandle() + ": " + refersTo.getMessage());
         this.refersTo = refersTo;
     }

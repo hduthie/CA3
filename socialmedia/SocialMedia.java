@@ -6,9 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * SocialMedia is an implemetor of the SocialMediaPlatform interface
+ */
 public class SocialMedia implements SocialMediaPlatform {
 
 	private static final long serialVersionUID = 1L;
@@ -59,7 +61,6 @@ public class SocialMedia implements SocialMediaPlatform {
 		account.setDescription(description);
 		accounts.add(account);
 		return account.getId();
-
 
 	}
 
@@ -314,7 +315,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		}
 
 		if (message.equals("") || message.length() > 100) {
-			
+
 			throw new InvalidPostException("The post : " + message + " is invalid");
 		} else {
 			Comment comment = new Comment(commenter, message, postCommentedOn);
@@ -353,9 +354,7 @@ public class SocialMedia implements SocialMediaPlatform {
 		Post parentOfDeletedPost = null;
 
 		if (deletedPost instanceof Endorsement) {
-			// remove endorsement from posts
-			// remove endorsement from posts on authors account
-			// decrement endorsements on parent post and parent post account
+
 			parentOfDeletedPost = ((Endorsement) deletedPost).getRefersTo();
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
@@ -364,14 +363,6 @@ public class SocialMedia implements SocialMediaPlatform {
 			parentOfDeletedPost.getAuthor().decrementEndorsements();
 
 		} else if (deletedPost instanceof Comment) {
-			// remove comment from posts
-			// remove comment from authors account
-			// decrement comments on parent post
-			// decrement comments on parent post account
-			// remove all endorsements and comments associated with deletedPost from author
-			// account
-			// redirect children to a generic empty post
-			// replace with a generic empty post in parent post BUT ONLY IF HAS CHILDREN
 
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
@@ -392,12 +383,6 @@ public class SocialMedia implements SocialMediaPlatform {
 				}
 			}
 		} else {
-			// Original post
-			// delete post from posts
-			// remove post from authors account
-			// remove all endorsements and comments associated with deletedPost from author
-			// account
-			// redirect children to generic empty post
 
 			posts.remove(deletedPost);
 			deletedPostAccount.getPosts().remove(deletedPost);
@@ -581,12 +566,10 @@ public class SocialMedia implements SocialMediaPlatform {
 		StringBuilder postChildrenDetails = new StringBuilder();
 		Post originalPost = getPostFromId(id);
 		if (originalPost instanceof Endorsement) {
-			
+
 			throw new NotActionablePostException("Endorsement posts do not have children.");
 		}
 
-		Account originalPostAccount = originalPost.getAuthor();
-		Boolean hasChildren = true;
 		Post currentPost = originalPost;
 		int nodeIndexOnCurrentLevel = 0;
 		int indent = 0;
@@ -875,6 +858,13 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	// Internal methods ****************************************
 
+	/**
+	 * Finds and returns an account with the given handle, if it exists.
+	 * 
+	 * @param handle the handle being searched for
+	 * @return the associated Account
+	 * @throws HandleNotRecognisedException if the handle is not in the system
+	 */
 	private Account findAccountFromHandle(String handle) throws HandleNotRecognisedException {
 
 		for (Account a : accounts) {
@@ -882,11 +872,19 @@ public class SocialMedia implements SocialMediaPlatform {
 				return a;
 			}
 		}
-		
+
 		throw new HandleNotRecognisedException("The handle " + handle + " is not recognised.");
 
 	}
 
+	/**
+	 * Finds and returns a particular post from an ID
+	 * 
+	 * @param id the id of the post being searched for
+	 * @return the Post with the associated ID
+	 * @throws PostIDNotRecognisedException if the ID does not match any posts in
+	 *                                      the system
+	 */
 	private Post getPostFromId(int id) throws PostIDNotRecognisedException {
 
 		for (Post p : posts) {
@@ -895,27 +893,44 @@ public class SocialMedia implements SocialMediaPlatform {
 				return p;
 			}
 		}
-		
+
 		throw new PostIDNotRecognisedException("The post ID " + id + " is not recognised.");
 
 	}
 
+	/**
+	 * Checks the validity of an account handle
+	 * 
+	 * @param handle the handle being checked
+	 * @return true if the handle is valid, false if not
+	 * @throws InvalidHandleException if the handle is empty, has more than 30
+	 *                                characters, or has white spaces.
+	 * @throws IllegalHandleException if the handle is already associated with an
+	 *                                existing account
+	 */
 	private static Boolean checkAccountHandle(String handle) throws InvalidHandleException, IllegalHandleException {
 		if (Account.isHandleUnique(handle)) {
 			if (Account.isHandleValid(handle)) {
 				return true;
 			} else {
-				
+
 				throw new InvalidHandleException("Handle is invalid: " + handle);
 
 			}
 		} else {
-			
+
 			throw new IllegalHandleException("Handle already exists: " + handle);
 		}
 
 	}
 
+	/**
+	 * Totals the number of endorsements for a particular account i.e. the number of
+	 * endorsments on the posts of this account
+	 * 
+	 * @param a the account being counted for endorsements
+	 * @return the number of endorsements
+	 */
 	private int countEndorsements(Account a) {
 		int totalEndorsements = 0;
 		for (Post p : a.getPosts()) {
@@ -929,6 +944,12 @@ public class SocialMedia implements SocialMediaPlatform {
 		return totalEndorsements;
 	}
 
+	/**
+	 * Checks if a post has children i.e. comments or endorsements
+	 * 
+	 * @param post the post being checked
+	 * @return true if the post has children, false if not
+	 */
 	private Boolean hasChildren(Post post) {
 		if (post.getReplies().size() == 0) {
 			return false;
@@ -938,6 +959,13 @@ public class SocialMedia implements SocialMediaPlatform {
 
 	}
 
+	/**
+	 * Changes an int of the level of intended indentation into a string with that
+	 * level of indent
+	 * 
+	 * @param indent the number of indentations, where one indentation is " "
+	 * @return the total string of indentations
+	 */
 	private String indentationToString(int indent) {
 		String indentation = "";
 		for (int i = 0; i < indent; i++) {

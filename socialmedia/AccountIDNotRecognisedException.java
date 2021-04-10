@@ -1,11 +1,9 @@
 package socialmedia;
 
-
-public class AccountIDNotRecognisedException 
-  extends RuntimeException {
-    /**
-     *
-     */
+/**
+ * Exception: if the Account ID is not in the system
+ */
+public class AccountIDNotRecognisedException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     public AccountIDNotRecognisedException(String errorMessage) {

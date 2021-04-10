@@ -3,11 +3,14 @@ package socialmedia;
 import java.util.ArrayList;
 import java.io.Serializable;
 
-
-public class Account implements Serializable{
-    private int id; 
-    private String handle; 
-    private String description; 
+/**
+ * Account class creates a social media account with a unique ID and saves it to
+ * the system
+ */
+public class Account implements Serializable {
+    private int id;
+    private String handle;
+    private String description;
     private int numberOfEndorsements = 0;
     private int numberOfComments = 0;
     private ArrayList<Post> posts = new ArrayList<Post>();
@@ -15,12 +18,17 @@ public class Account implements Serializable{
     private static int idCount = 10000000;
     private static final long serialVersionUID = 1L;
 
-    public Account(String handle){
+    /**
+     * Creates a social media account object with a specified handle and a unique ID
+     * 
+     * @param handle the social media handle, already checked for uniqueness
+     */
+    public Account(String handle) {
 
         this.handle = handle;
-                handles.add(handle);
-                id = idCount;
-                idCount += 1;
+        handles.add(handle);
+        id = idCount;
+        idCount += 1;
 
     }
 
@@ -44,10 +52,20 @@ public class Account implements Serializable{
         this.description = description;
     }
 
+    /**
+     * Checks if the handle is already in the system
+     */
     public static Boolean isHandleUnique(String handle) {
         return !(handles.contains(handle));
     }
 
+    /**
+     * Checks the handle is not empty, longer than 30 characters or contains
+     * whitespace
+     * 
+     * @param handle the handle being checked
+     * @return true if the handle is valid, false otherwise
+     */
     public static Boolean isHandleValid(String handle) {
         if (handle.equals("")) {
             return false;
@@ -74,6 +92,11 @@ public class Account implements Serializable{
         posts.add(p);
     }
 
+    /**
+     * Removes a post from the account
+     * 
+     * @param p the post being removed
+     */
     public void removePostFromAccount(Post p) {
         if (posts.contains(p)) {
             posts.remove(p);
@@ -81,27 +104,37 @@ public class Account implements Serializable{
 
     }
 
-    public void incrementEndorsements(){
-        numberOfEndorsements +=1;
-    }
-    public void decrementEndorsements(){
-        numberOfEndorsements -=1;
-    }
-
-
-    public void incrementComments(){
-        numberOfComments +=1;
+    /**
+     * Increments the number of endorsements associated with this account by 1
+     */
+    public void incrementEndorsements() {
+        numberOfEndorsements += 1;
     }
 
-    public void decrementComments(){
-        numberOfComments -=1;
+    /**
+     * Decrements the number of endorsements associated with this account by 1
+     */
+    public void decrementEndorsements() {
+        numberOfEndorsements -= 1;
     }
 
+    /**
+     * Increments the number of comments associated with this account by 1
+     */
+    public void incrementComments() {
+        numberOfComments += 1;
+    }
+
+    /**
+     * Decrements the number of endorsements associated with this account by 1
+     */
+    public void decrementComments() {
+        numberOfComments -= 1;
+    }
 
     public int getNumberOfEndorsements() {
         return numberOfEndorsements;
     }
-
 
     public int getNumberOfComments() {
         return numberOfComments;
@@ -114,7 +147,5 @@ public class Account implements Serializable{
     public static void setIdCount(int idCount) {
         Account.idCount = idCount;
     }
-
-    
 
 }

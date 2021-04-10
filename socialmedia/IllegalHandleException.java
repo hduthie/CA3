@@ -3,14 +3,11 @@ package socialmedia;
 /**
  * Exception: If the new handle already exists in the platform.
  */
-public class IllegalHandleException 
-  extends RuntimeException {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+public class IllegalHandleException extends RuntimeException {
 
-    public IllegalHandleException(String errorMessage) {
-        super(errorMessage);
-    }
+  private static final long serialVersionUID = 1L;
+
+  public IllegalHandleException(String errorMessage) {
+    super(errorMessage);
+  }
 }
