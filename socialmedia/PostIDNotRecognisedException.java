@@ -8,8 +8,8 @@ public class PostIDNotRecognisedException
      */
     private static final long serialVersionUID = 1L;
 
-    public PostIDNotRecognisedException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public PostIDNotRecognisedException(String errorMessage) {
+        super(errorMessage);
     }
 }
 

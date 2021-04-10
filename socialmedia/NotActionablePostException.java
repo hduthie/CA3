@@ -7,7 +7,7 @@ public class NotActionablePostException
      */
     private static final long serialVersionUID = 1L;
 
-    public NotActionablePostException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public NotActionablePostException(String errorMessage) {
+        super(errorMessage);
     }
 }

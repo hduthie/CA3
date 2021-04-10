@@ -7,7 +7,7 @@ public class InvalidPostException
      */
     private static final long serialVersionUID = 1L;
 
-    public InvalidPostException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public InvalidPostException(String errorMessage) {
+        super(errorMessage);
     }
 }

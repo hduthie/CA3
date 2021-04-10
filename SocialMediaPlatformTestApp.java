@@ -375,7 +375,6 @@ public class SocialMediaPlatformTestApp {
 
             // Deleting Posts -------------
             // Testing deletePost(int id)
-            System.out.println("________________Account 1 has: " + ((SocialMedia) platform).findAccountFromHandle("my_handle1").getNumberOfEndorsements() + " endorsements");
             
             platform.deletePost(like1);
             assert (platform.getTotalEndorsmentPosts() == 7) : "Endorsement did not delete";
@@ -386,7 +385,6 @@ public class SocialMediaPlatformTestApp {
             platform.deletePost(post1); // has a comment
             assert (platform.getTotalOriginalPosts() == 2) : "Post did not delete";
 
-            System.out.println("________________Account 1 has: " + ((SocialMedia) platform).findAccountFromHandle("my_handle1").getNumberOfEndorsements() + " endorsements");
 
 
             // Checking PostIDNotRecognisedException
@@ -418,6 +416,7 @@ public class SocialMediaPlatformTestApp {
             // Testing showPostChildrenDetails(int id)
 
             StringBuilder postChildrenDetails = platform.showPostChildrenDetails(post3);
+            System.out.println(postChildrenDetails);
 
             // Checking PostIDNotRecognisedException
             try {

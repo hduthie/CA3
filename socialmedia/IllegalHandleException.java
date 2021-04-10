@@ -10,7 +10,7 @@ public class IllegalHandleException
      */
     private static final long serialVersionUID = 1L;
 
-    public IllegalHandleException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public IllegalHandleException(String errorMessage) {
+        super(errorMessage);
     }
 }

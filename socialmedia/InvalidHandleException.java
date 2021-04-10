@@ -9,8 +9,8 @@ public class InvalidHandleException
      */
     private static final long serialVersionUID = 1L;
 
-    public InvalidHandleException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public InvalidHandleException(String errorMessage) {
+        super(errorMessage);
     }
 }
 

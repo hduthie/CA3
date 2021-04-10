@@ -8,7 +8,7 @@ public class HandleNotRecognisedException
      */
     private static final long serialVersionUID = 1L;
 
-    public HandleNotRecognisedException(String errorMessage, Throwable err) {
-        super(errorMessage, err);
+    public HandleNotRecognisedException(String errorMessage) {
+        super(errorMessage);
     }
 }
